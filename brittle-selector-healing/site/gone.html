@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Books to Scrape (gone: prices need sign-in)</title>
+<style>
+  body { font-family: system-ui, -apple-system, sans-serif; background: #0f1222; color: #eee; margin: 0; }
+  .topbar { padding: 18px 32px; font-size: 24px; font-weight: 700; }
+  .sale { background: linear-gradient(90deg, #e8520a, #c026d3); padding: 10px 32px; font-weight: 600; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px;
+           max-width: 1000px; margin: 24px auto; padding: 0 16px; }
+  .book-card { background: #1a1e36; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .book-card__name { margin: 0; font-size: 16px; line-height: 1.3; min-height: 42px; }
+  .price--was { color: #888; margin-right: 8px; }
+  .price--now { color: #36d399; font-size: 20px; font-weight: 700; }
+  .book-card__signin { color: #e879f9; }
+  .book-card__stock { font-size: 13px; }
+  .book-card__stock[data-stock="out"] { color: #f87171; }
+</style>
+</head>
+<body>
+  <div class="topbar">Books to Scrape</div>
+  <div class="sale">Members only: sign in to see prices</div>
+  <section class="grid">
+    <article class="product_pod book-card" data-sku="bk-001">
+      <h2 class="book-card__name">A Light in the Attic</h2>
+      <div class="book-card__pricing">
+        <a class="book-card__signin" href="#signin">Sign in to see price</a>
+      </div>
+      <span class="book-card__stock" data-stock="in">In stock</span>
+    </article>
+    <article class="product_pod book-card" data-sku="bk-002">
+      <h2 class="book-card__name">Tipping the Velvet</h2>
+      <div class="book-card__pricing">
+        <a class="book-card__signin" href="#signin">Sign in to see price</a>
+      </div>
+      <span class="book-card__stock" data-stock="in">In stock</span>
+    </article>
+    <article class="product_pod book-card" data-sku="bk-003">
+      <h2 class="book-card__name">Soumission</h2>
+      <div class="book-card__pricing">
+        <a class="book-card__signin" href="#signin">Sign in to see price</a>
+      </div>
+      <span class="book-card__stock" data-stock="in">In stock</span>
+    </article>
+    <article class="product_pod book-card" data-sku="bk-004">
+      <h2 class="book-card__name">Sharp Objects</h2>
+      <div class="book-card__pricing">
+        <a class="book-card__signin" href="#signin">Sign in to see price</a>
+      </div>
+      <span class="book-card__stock" data-stock="in">In stock</span>
+    </article>
+    <article class="product_pod book-card" data-sku="bk-005">
+      <h2 class="book-card__name">Sapiens: A Brief History of Humankind</h2>
+      <div class="book-card__pricing">
+        <a class="book-card__signin" href="#signin">Sign in to see price</a>
+      </div>
+      <span class="book-card__stock" data-stock="in">In stock</span>
+    </article>
+    <article class="product_pod book-card" data-sku="bk-006">
+      <h2 class="book-card__name">The Requiem Red</h2>
+      <div class="book-card__pricing">
+        <a class="book-card__signin" href="#signin">Sign in to see price</a>
+      </div>
+      <span class="book-card__stock" data-stock="out">Sold out</span>
+    </article>
+    <article class="product_pod book-card" data-sku="bk-007">
+      <h2 class="book-card__name">The Dirty Little Secrets of Getting Your Dream Job</h2>
+      <div class="book-card__pricing">
+        <a class="book-card__signin" href="#signin">Sign in to see price</a>
+      </div>
+      <span class="book-card__stock" data-stock="in">In stock</span>
+    </article>
+    <article class="product_pod book-card" data-sku="bk-008">
+      <h2 class="book-card__name">The Coming Woman</h2>
+      <div class="book-card__pricing">
+        <a class="book-card__signin" href="#signin">Sign in to see price</a>
+      </div>
+      <span class="book-card__stock" data-stock="in">In stock</span>
+    </article>
+    <article class="product_pod book-card" data-sku="bk-009">
+      <h2 class="book-card__name">The Boys in the Boat</h2>
+      <div class="book-card__pricing">
+        <a class="book-card__signin" href="#signin">Sign in to see price</a>
+      </div>
+      <span class="book-card__stock" data-stock="in">In stock</span>
+    </article>
+    <article class="product_pod book-card" data-sku="bk-010">
+      <h2 class="book-card__name">The Black Maria</h2>
+      <div class="book-card__pricing">
+        <a class="book-card__signin" href="#signin">Sign in to see price</a>
+      </div>
+      <span class="book-card__stock" data-stock="out">Sold out</span>
+    </article>
+  </section>
+</body>
+</html>
