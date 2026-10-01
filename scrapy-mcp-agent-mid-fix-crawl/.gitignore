@@ -1,0 +1,7 @@
+.venv/
+.heal/
+__pycache__/
+books.jsonl
+HEAL_REPORT.md
+ESCALATION.md
+.pytest_cache/

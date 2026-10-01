@@ -1,0 +1,17 @@
+[project]
+name = "scrapy-mcp-agent-mid-fix-crawl"
+version = "0.1.0"
+description = "Heal a Scrapy crawl while it is still running"
+requires-python = ">=3.13"
+dependencies = [
+    "attrs",
+    "scrapy>=2.19",
+    "scrapy-mcp-official>=0.1.2",
+    "scrapy-poet>=0.27.2",
+    "spidermon>=1.27",
+    "web-poet",
+    "pytest<9",  # a failing web-poet fixture test crashes pytest 9 (INTERNALERROR)
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
