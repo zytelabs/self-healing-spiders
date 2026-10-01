@@ -1,0 +1,5 @@
+slides/
+stage/
+.venv/
+__pycache__/
+.DS_Store
