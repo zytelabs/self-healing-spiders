@@ -1650,6 +1650,14 @@ wheels = [
 ]
 
 [[package]]
+name = "scrapy-beep"
+version = "0.1.0"
+source = { git = "https://github.com/apscrapes/scrapy-fanfare-audio-plugin.git#c70ed830261f6d033864d021b1358f4777ef977c" }
+dependencies = [
+    { name = "scrapy" },
+]
+
+[[package]]
 name = "scrapy-mcp-agent-mid-fix-crawl"
 version = "0.1.0"
 source = { virtual = "." }
@@ -1657,6 +1665,7 @@ dependencies = [
     { name = "attrs" },
     { name = "pytest" },
     { name = "scrapy" },
+    { name = "scrapy-beep" },
     { name = "scrapy-mcp-official" },
     { name = "scrapy-poet" },
     { name = "spidermon" },
@@ -1668,6 +1677,7 @@ requires-dist = [
     { name = "attrs" },
     { name = "pytest", specifier = "<9" },
     { name = "scrapy", specifier = ">=2.19" },
+    { name = "scrapy-beep", git = "https://github.com/apscrapes/scrapy-fanfare-audio-plugin.git" },
     { name = "scrapy-mcp-official", specifier = ">=0.1.2" },
     { name = "scrapy-poet", specifier = ">=0.27.2" },
     { name = "spidermon", specifier = ">=1.27" },

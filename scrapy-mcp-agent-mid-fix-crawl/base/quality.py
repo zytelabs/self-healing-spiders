@@ -7,6 +7,7 @@ import types
 from collections import deque
 
 from scrapy import signals
+from scrapy_beep.extension import BeepExtension
 from spidermon import Monitor, MonitorSuite, monitors
 from spidermon.core.actions import Action
 
@@ -29,6 +30,21 @@ def load_page_objects(path=PAGES_FILE):
     return module
 
 
+class QualityBeep(BeepExtension):
+    """The plugin judges a crawl by item count and ERROR lines: empty rows get the fanfare, and Spidermon's
+    own failure report (an ERROR line) makes a healed crawl sound like a failure. Here the last item decides:
+    still broken at the end is a failure, healed halfway is not."""
+
+    def spider_closed(self, spider, reason):
+        last_ok = spider.crawler.stats.get_value("quality/last_item_ok")
+        if last_ok is None:
+            return super().spider_closed(spider, reason)
+        ok = last_ok and reason == "finished"
+        spider.logger.info("QualityBeep: reason=%s, last item %s → %s", reason,
+                           "complete" if last_ok else "missing fields", "SUCCESS" if ok else "FAILURE")
+        self._play(self.success_sound if ok else self.failure_sound)
+
+
 class TrackMissing:
     """Keeps every item (broken ones too) and writes a one-line progress record per item."""
 
@@ -45,6 +61,7 @@ class TrackMissing:
         stats = self.crawler.stats
         missing = [f for f in REQUIRED if getattr(item, f, None) in (None, "")]
         stats.inc_value("quality/items")
+        stats.set_value("quality/last_item_ok", not missing)
         if missing:
             stats.inc_value("quality/items_missing")
             for f in missing:

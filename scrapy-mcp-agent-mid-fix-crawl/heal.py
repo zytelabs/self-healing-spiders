@@ -401,9 +401,12 @@ def main():
     for p in (FEED, REPORT, ESCALATION):
         p.unlink(missing_ok=True)
 
-    say(f"▶ crawling books.toscrape.com, {pages} catalogue pages · Spidermon checks new items twice a second", "bold")
-    say(f"▶ agent: model {MODEL or 'default'} · effort {EFFORT or 'default'} · "
-        f"{MAX_ATTEMPTS} attempts · budget ${BUDGET_USD:.2f}\n", "dim")
+    if os.environ.get("HEAL_ENABLED", "1") != "1":
+        say(f"▶ crawling books.toscrape.com, {pages} catalogue pages · no healing: a broken selector is scraped as it is", "bold")
+    else:
+        say(f"▶ crawling books.toscrape.com, {pages} catalogue pages · Spidermon checks new items twice a second", "bold")
+        say(f"▶ agent: model {MODEL or 'default'} · effort {EFFORT or 'default'} · "
+            f"{MAX_ATTEMPTS} attempts · budget ${BUDGET_USD:.2f}\n", "dim")
     started, items, attempts, healed, tripped = time.time(), Items(), [], None, None
     crawl = start_crawl(pages)
     trip_file = HEAL / "TRIPPED.json"

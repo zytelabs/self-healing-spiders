@@ -9,13 +9,16 @@ export HEAL_MODEL ?= sonnet
 STAGE ?= /tmp/scrapy-mcp-agent-mid-fix-crawl
 PO = base/pages/books_toscrape_com.py
 
-.PHONY: install run break reset show diff report test stage clean
+.PHONY: install run run-with-heal break reset show diff report test stage clean
 
 install:            ## install dependencies
 	uv sync
 
-run:                ## crawl, watch with Spidermon, heal mid-crawl if it breaks
-	HEAL_PACE=$(PACE) uv run python heal.py $(PAGES)
+run:                ## crawl as it is: no monitor, no agent, a broken selector gives broken rows
+	HEAL_ENABLED=0 uv run python heal.py $(PAGES)
+
+run-with-heal:      ## crawl, watch with Spidermon, heal mid-crawl if it breaks
+	HEAL_ENABLED=1 HEAL_PACE=$(PACE) uv run python heal.py $(PAGES)
 
 break:              ## break the price selector on purpose
 	@perl -0pi -e 's/(def price.*?)p\.price_color/$$1p.price-now/s' $(PO)

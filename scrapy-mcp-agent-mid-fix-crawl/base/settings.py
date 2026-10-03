@@ -1,3 +1,4 @@
+import os
 BOT_NAME = "base"
 SPIDER_MODULES = ["base.spiders"]
 NEWSPIDER_MODULE = "base.spiders"
@@ -21,6 +22,10 @@ ITEM_PIPELINES = {"base.quality.TrackMissing": 100}
 EXTENSIONS = {
     "spidermon.contrib.scrapy.extensions.Spidermon": 500,
     "base.quality.CrawlHandles": 510,
+    # fanfare on a clean finish, trombone on a failure. Not via its Addon: that sets EXTENSIONS at a lower
+    # priority than this project dict, so it would never load.
+    "base.quality.QualityBeep": 520,
 }
 SPIDERMON_ENABLED = True
-SPIDERMON_PERIODIC_MONITORS = {"base.quality.Tripwire": 0.5}
+# No tripwire, nothing pauses the crawl and no agent is started (make run); make run-with-heal sets HEAL_ENABLED=1
+SPIDERMON_PERIODIC_MONITORS = {"base.quality.Tripwire": 0.5} if os.environ.get("HEAL_ENABLED", "1") == "1" else {}

@@ -8,10 +8,11 @@ watches it with Spidermon, and heals it mid-crawl with an agent that attaches th
 ```
 make stage        # copy to /tmp/scrapy-mcp-agent-mid-fix-crawl and install; run everything from there
 cd /tmp/scrapy-mcp-agent-mid-fix-crawl
-make run          # perfect run: every book complete in books.jsonl
+make run          # perfect run: every book complete in books.jsonl, fanfare
 make show
 make break        # break the price selector on purpose
-make run          # Spidermon pauses the crawl, the agent fixes it, the crawl finishes
+make run          # no agent: the crawl finishes with 200 books and no prices, sad trombone
+make run-with-heal   # Spidermon pauses the crawl, the agent fixes it, the crawl finishes, fanfare
 make show         # a few broken rows at the top, then correct ones
 make report       # HEAL_REPORT.md: tries, cost, the fix
 make reset        # put the working selector back
@@ -34,6 +35,8 @@ make reset        # put the working selector back
 
 Dials: `PAGES` (make variable, default 10), `HEAL_MODEL`, `HEAL_EFFORT`, `HEAL_MAX_ATTEMPTS`,
 `HEAL_BUDGET_USD`. `CLAUDE_BIN` swaps in a fake agent to test the fail paths for free.
+
+Sound: `base/quality.py` extends the [scrapy-beep](https://github.com/apscrapes/scrapy-fanfare-audio-plugin) extension. A fanfare plays when the crawl finishes with its last item complete, a sad trombone otherwise. `BEEP_ENABLED = False` in `base/settings.py` turns it off.
 
 Needs Scrapy 2.19+ (the remote-control extension the MCP attaches to), [uv](https://docs.astral.sh/uv/)
 and a signed-in `claude`.

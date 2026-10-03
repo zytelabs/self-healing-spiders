@@ -11,7 +11,11 @@ dependencies = [
     "spidermon>=1.27",
     "web-poet",
     "pytest<9",  # a failing web-poet fixture test crashes pytest 9 (INTERNALERROR)
+    "scrapy-beep",
 ]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
+
+[tool.uv.sources]
+scrapy-beep = { git = "https://github.com/apscrapes/scrapy-fanfare-audio-plugin.git" }
