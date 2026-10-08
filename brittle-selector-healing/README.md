@@ -81,5 +81,5 @@ Claude Opus 5.5 unless noted, 10 books on one page:
 | --- | --- |
 | v2, 7 runs (28 and 29 Sep 2026) | healed on attempt 1 every time, $0.07 to $0.16, 24 to 31s |
 | v2, Sonnet 5 at low effort, 1 run (28 Sep) | healed on attempt 1, $0.08, 21s |
-| v2 with the Bash line commented out, 3 runs (29 Sep) | escalated after 2 attempts, $0.11 to $0.24, 33 to 49s |
+| v2 without Bash (Read, Grep, Glob only), 3 runs (29 Sep) | escalated after 2 attempts, $0.11 to $0.24, 33 to 49s |
 | gone, 2 runs (29 Sep) | escalated after 2 attempts, $0.17 to $0.19, 57 to 61s |

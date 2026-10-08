@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loop Engineer your way to Self-Healing Spiders</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Engine and tokens copied from zyte/meetups/2/deck/deck.template.html */
+:root{
+  --navy-950:#070917; --navy-900:#0b0d25;
+  --fuchsia-600:#c026d3; --fuchsia-500:#b02cce; --fuchsia-400:#e879f9;
+  --accent-400:#e60466; --accent-300:#e83281; --green:#36d399; --red:#f87171;
+  --n0:#ffffff; --n200:#e5e5e5; --n300:#d4d4d4; --n400:#a3a3a3; --n500:#737373;
+  --grad-headline:linear-gradient(90deg,#e8520a 0%,#c026d3 100%);
+  --grad-brand:linear-gradient(120deg,#e60466 0%,#c026d3 55%,#7b2ff7 100%);
+  --sans:"Geist",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"Geist Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+code,pre,.term{font-variant-ligatures:none}
+html,body{height:100%}
+body{background:#04050d;color:var(--n0);font-family:var(--sans);overflow:hidden;display:flex;align-items:center;justify-content:center;-webkit-font-smoothing:antialiased}
+.stage{position:relative;overflow:hidden;width:min(100vw,177.78vh);height:min(100vh,56.25vw);container-type:size;
+  background:radial-gradient(120% 120% at 80% -10%,#2a1352 0%,transparent 45%),radial-gradient(120% 130% at -10% 110%,#2a0b3f 0%,transparent 50%),linear-gradient(160deg,var(--navy-950) 0%,var(--navy-900) 55%,#15082b 100%)}
+.bg{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.orb{position:absolute;border-radius:50%;filter:blur(60px);opacity:.4;mix-blend-mode:screen}
+.orb.a{width:46cqh;height:46cqh;background:radial-gradient(circle,#c026d3,transparent 70%);top:-12cqh;right:-6cqh;animation:float1 18s ease-in-out infinite}
+.orb.b{width:40cqh;height:40cqh;background:radial-gradient(circle,#e60466,transparent 70%);bottom:-14cqh;left:-8cqh;animation:float2 22s ease-in-out infinite}
+@keyframes float1{0%,100%{transform:translate(0,0)}50%{transform:translate(-4cqw,4cqh)}}
+@keyframes float2{0%,100%{transform:translate(0,0)}50%{transform:translate(5cqw,-3cqh)}}
+.grid{position:absolute;inset:0;opacity:.06;background-image:linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px);background-size:4cqw 4cqw;
+  -webkit-mask-image:radial-gradient(circle at 50% 50%,#000 30%,transparent 80%);mask-image:radial-gradient(circle at 50% 50%,#000 30%,transparent 80%)}
+.stream{position:absolute;inset:0;overflow:hidden}
+.tok{position:absolute;font-family:var(--mono);color:rgba(245,208,254,.14);white-space:nowrap;animation:rise linear infinite}
+.tok .k{color:rgba(232,82,10,.28)}
+@keyframes rise{0%{transform:translateY(8cqh);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translateY(-110cqh);opacity:0}}
+
+.slide{position:absolute;inset:0;z-index:2;display:none;flex-direction:column;padding:7cqh 7cqw;opacity:0}
+.slide.active{display:flex;opacity:1;animation:slidein .55s cubic-bezier(.2,.7,.2,1)}
+@keyframes slidein{from{opacity:0;transform:translateY(1.5cqh) scale(.995)}to{opacity:1;transform:none}}
+.mark{font-weight:700;letter-spacing:-.03em;line-height:1;font-size:3.3cqh}
+.mark .dot{color:var(--fuchsia-500)}
+.chrome-top{position:absolute;top:4.5cqh;left:7cqw;right:7cqw;z-index:3;display:flex;justify-content:space-between;align-items:center}
+.eyebrow{font-family:var(--mono);font-size:1.65cqh;letter-spacing:.28em;text-transform:uppercase;color:#cbb6e6;display:flex;align-items:center;gap:1cqw}
+.eyebrow::before{content:"";width:2.4cqw;height:2px;background:var(--accent-400)}
+.footer{position:absolute;bottom:4.2cqh;left:7cqw;right:7cqw;z-index:3;display:flex;justify-content:space-between;font-family:var(--mono);font-size:1.54cqh;color:var(--n500)}
+.kicker{font-family:var(--mono);font-size:1.87cqh;letter-spacing:.3em;text-transform:uppercase;color:#f0abfc;margin-bottom:2.2cqh;display:flex;align-items:center;gap:1.2cqw}
+.kicker::before{content:"";width:3cqw;height:2px;background:var(--accent-400)}
+.grad{background:var(--grad-headline);-webkit-background-clip:text;background-clip:text;color:transparent}
+h1{font-weight:800;letter-spacing:-.035em;line-height:.98}
+h2{font-weight:700;letter-spacing:-.03em;line-height:1.05;font-size:5.5cqh}
+.body{z-index:2;flex:1;display:flex;flex-direction:column;justify-content:center}
+.lead{font-size:2.53cqh;color:var(--n300);line-height:1.5;margin-top:2cqh;max-width:70cqw}
+
+/* divider */
+.divider h1{font-size:10.45cqh;max-width:80cqw}
+
+/* side-by-side code */
+.pair{display:flex;gap:2.4cqw;margin-top:3.4cqh}
+.panel{flex:1;background:rgba(4,5,13,.6);border:1px solid rgba(245,208,254,.16);border-radius:16px;overflow:hidden}
+.panel .hd{display:flex;justify-content:space-between;padding:1.4cqh 1.8cqw;font-family:var(--mono);font-size:1.65cqh;color:#cbb6e6;border-bottom:1px solid rgba(245,208,254,.12)}
+.panel .hd b{color:#fff}
+.panel pre{font-family:var(--mono);font-size:1.925cqh;line-height:1.65;padding:2cqh 1.8cqw;color:var(--n400);white-space:pre}
+.sel{color:#fff;background:rgba(192,38,211,.28);border-radius:4px;padding:0 .3cqw}
+.trap{color:#fff;background:rgba(248,113,113,.28);border-radius:4px;padding:0 .3cqw}
+.map{display:flex;gap:1.4cqw;margin-top:2.6cqh;flex-wrap:wrap}
+.map div{font-family:var(--mono);font-size:1.705cqh;color:#e9d6f7;border:1px solid rgba(245,208,254,.22);border-radius:999px;padding:.9cqh 1.5cqw}
+.map s{color:var(--n500)}
+
+/* checks ladder */
+.checks{display:grid;grid-template-columns:repeat(4,1fr);gap:1.6cqw;margin-top:3.6cqh}
+.chk{background:rgba(255,255,255,.045);border:1px solid rgba(245,208,254,.16);border-radius:16px;padding:2.6cqh 1.6cqw;display:flex;flex-direction:column;gap:1.2cqh}
+.chk .ix{font-family:var(--mono);font-size:1.76cqh;color:var(--fuchsia-400)}
+.chk h3{font-size:2.75cqh;font-weight:700}
+.chk p{font-size:1.87cqh;color:var(--n300);line-height:1.45}
+.chk.gold{border-color:rgba(232,82,10,.6);background:rgba(232,82,10,.08)}
+
+/* loop flow */
+.flow{display:flex;align-items:center;gap:1.1cqw;margin-top:4cqh}
+.step{flex:1;background:rgba(255,255,255,.045);border:1px solid rgba(245,208,254,.18);border-radius:14px;padding:2.2cqh 1.3cqw;text-align:center}
+.step .t{font-size:2.31cqh;font-weight:700}
+.step .d{font-size:1.595cqh;color:var(--n400);margin-top:.7cqh;line-height:1.4}
+.step.agent{border-color:rgba(192,38,211,.7);background:rgba(192,38,211,.12)}
+.arrow{font-size:2.86cqh;color:var(--fuchsia-400)}
+.outcomes{display:flex;gap:2cqw;margin-top:3cqh}
+.out{flex:1;border-radius:14px;padding:2cqh 1.8cqw;font-size:1.98cqh;line-height:1.5;color:var(--n200)}
+.out b{font-family:var(--mono)}
+.out.ok{border:1px solid rgba(54,211,153,.5);background:rgba(54,211,153,.08)}
+.out.ok b{color:var(--green)}
+.out.no{border:1px solid rgba(248,113,113,.5);background:rgba(248,113,113,.08)}
+.out.no b{color:var(--red)}
+
+/* terminal */
+.term{font-family:var(--mono);font-size:2.09cqh;color:#cbb6e6;background:rgba(4,5,13,.6);border:1px solid rgba(245,208,254,.16);border-radius:14px;padding:2.4cqh 2.4cqw;line-height:1.85;margin-top:3cqh;white-space:pre}
+.term .p{color:var(--accent-300)}
+.term .c{color:var(--n500)}
+.term .ok{color:var(--green)}
+.term .no{color:var(--red)}
+.panel pre .ok{color:var(--green)} .panel pre .no{color:var(--red)}
+
+/* stats */
+.stats{display:flex;gap:2cqw;margin-top:4cqh}
+.stat{flex:1;background:rgba(255,255,255,.045);border:1px solid rgba(245,208,254,.16);border-radius:18px;padding:3.4cqh 2cqw;text-align:center}
+.stat .v{font-size:6.82cqh;white-space:nowrap;font-weight:800;letter-spacing:-.04em}
+.stat .l{font-family:var(--mono);font-size:1.76cqh;color:var(--n400);margin-top:1cqh;letter-spacing:.1em;text-transform:uppercase}
+.note{font-family:var(--mono);font-size:1.595cqh;color:var(--n500);margin-top:2.4cqh}
+
+.big{font-size:9.35cqh;max-width:80cqw}
+/* poll */
+.poll{display:flex;gap:2cqw;margin-top:4.5cqh}
+.opt{flex:1;border-radius:18px;padding:4cqh 2cqw;text-align:center;background:rgba(255,255,255,.045);border:1px solid rgba(245,208,254,.2)}
+.opt .k{font-family:var(--mono);font-size:2.2cqh;color:var(--fuchsia-400)}
+.opt .t{font-size:3.52cqh;font-weight:700;margin-top:1.2cqh}
+.opt .d{font-size:1.87cqh;color:var(--n400);margin-top:1cqh}
+/* config snippet */
+.cfg{display:flex;gap:2.4cqw;margin-top:3cqh;align-items:stretch}
+.cfg .panel{flex:1.35}
+.cfg .panel pre{font-size:1.595cqh}
+.cfg .knobs{flex:1;display:flex;flex-direction:column;gap:1.4cqh}
+.knob{background:rgba(255,255,255,.045);border:1px solid rgba(245,208,254,.16);border-radius:14px;padding:1.6cqh 1.6cqw}
+.knob .n{font-size:2.2cqh;font-weight:700}
+.knob .d{font-size:1.65cqh;color:var(--n400);margin-top:.4cqh;line-height:1.4}
+.pre-c{color:var(--n500)} .pre-v{color:#fff} .pre-k{color:#f0abfc}
+/* escalation */
+.esc{display:flex;gap:2.4cqw;margin-top:3cqh;align-items:stretch}
+.esc .term{flex:1.1;margin-top:0;font-size:1.815cqh}
+.quote{flex:1;background:rgba(255,255,255,.045);border:1px solid rgba(245,208,254,.2);border-left:4px solid var(--fuchsia-500);border-radius:14px;padding:2.4cqh 2cqw;display:flex;flex-direction:column;gap:1.8cqh}
+.quote .h{font-family:var(--mono);font-size:1.65cqh;color:#f0abfc;letter-spacing:.12em;text-transform:uppercase}
+.quote p{font-size:2.09cqh;color:var(--n200);line-height:1.5}
+
+
+
+  font-family:var(--mono);font-size:1.485cqh;color:rgba(229,229,229,.62);pointer-events:auto}
+  border:1px solid rgba(245,208,254,.18);border-radius:6px;padding:.3cqh .6cqw;cursor:pointer}
+
+
+
+
+/* reflow additions */
+.qbig{font-size:7.04cqh;max-width:84cqw}
+.poll4{display:grid;grid-template-columns:repeat(4,1fr);gap:1.6cqw;margin-top:4cqh}
+.poll4 .opt{padding:3cqh 1.4cqw}
+.poll4 .opt .t{font-size:2.86cqh}
+.snips{display:grid;grid-template-columns:1.15fr 1fr;grid-template-rows:auto auto;gap:1.6cqh 1.8cqw;margin-top:2.6cqh}
+.snips .panel pre{font-size:1.43cqh;line-height:1.55;padding:1.4cqh 1.4cqw}
+.snips .panel.tall{grid-row:span 2}
+.term.sm{font-size:1.65cqh;line-height:1.6;padding:1.8cqh 2cqw}
+.term .dim{color:var(--n500)}
+.vtable{margin-top:3cqh;border-collapse:collapse;width:100%;font-size:2.2cqh}
+.vtable th{font-family:var(--mono);font-size:1.54cqh;letter-spacing:.14em;text-transform:uppercase;color:#f0abfc;text-align:left;padding:1.2cqh 1.4cqw;border-bottom:1px solid rgba(245,208,254,.2)}
+.vtable td{padding:1.5cqh 1.4cqw;border-bottom:1px solid rgba(245,208,254,.08);color:var(--n200)}
+.vtable tr.key td{background:rgba(232,82,10,.08)}
+.vtable .ok{color:var(--green);font-family:var(--mono)} .vtable .no{color:var(--red);font-family:var(--mono)}
+
+
+/* prompt risks + best practices */
+.pw{display:grid;grid-template-columns:1.15fr 1fr;gap:2cqw;margin-top:2.4cqh;align-items:start}
+.pw .panel pre{font-size:1.595cqh;line-height:1.6;white-space:pre-wrap}
+.pw mark{background:rgba(248,113,113,.18);color:#fff;border-radius:4px;padding:0 .3cqw}
+.pw.good mark{background:rgba(54,211,153,.16)} .pw.good mark b,.pw.good .risk b.nb{background:var(--green)}
+.pair.mcp .panel pre{font-size:1.375cqh;line-height:1.55;white-space:pre-wrap}
+.pw.good{grid-template-columns:1.75fr 1fr} .pw.good .panel pre{font-size:1.232cqh;line-height:1.5;white-space:pre} .pw.good .risk{font-size:1.65cqh}
+.pw mark b,.risk b.nb{display:inline-grid;place-items:center;width:2.2cqh;height:2.2cqh;border-radius:50%;background:var(--red);color:#1a0b0b;font-size:1.43cqh;margin-right:.4cqw;font-family:var(--mono)}
+.risks{display:flex;flex-direction:column;gap:1.3cqh}
+.risk{background:rgba(255,255,255,.045);border:1px solid rgba(245,208,254,.16);border-radius:12px;padding:1.4cqh 1.4cqw;font-size:1.815cqh;color:var(--n200);line-height:1.45}
+.bp{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4cqh 1.4cqw;margin-top:3cqh}
+.bp .chk{padding:2cqh 1.4cqw;gap:.9cqh}
+.bp.four{grid-template-columns:repeat(4,1fr)}
+.bp .chk h3{font-size:2.31cqh}
+.bp .chk p{font-size:1.705cqh}
+.tag{align-self:flex-start;font-family:var(--mono);font-size:1.32cqh;letter-spacing:.08em;padding:.3cqh .7cqw;border-radius:999px;border:1px solid}
+.tag.yes{color:var(--green);border-color:rgba(54,211,153,.45)}
+.tag.part{color:#fcd34d;border-color:rgba(252,211,77,.45)}
+.tag.no{color:var(--n400);border-color:rgba(163,163,163,.35)}
+
+.progress{position:fixed;top:0;left:0;height:3px;background:var(--grad-brand);z-index:50;transition:width .4s ease;width:0}
+.slidenum{position:fixed;bottom:12px;right:18px;z-index:50;font-family:var(--mono);font-size:13px;color:rgba(255,255,255,.55)}
+.dots{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:50}
+.dots button{width:8px;height:8px;border-radius:50%;border:none;background:rgba(255,255,255,.25);cursor:pointer;padding:0}
+.dots button.on{background:var(--fuchsia-400);width:22px;border-radius:6px}
+.navzone{position:fixed;top:0;bottom:26%;width:18%;z-index:40;cursor:pointer}
+.navzone.l{left:0}.navzone.r{right:0}
+/* ---------- v2 deck additions (1 Oct 2026) ---------- */
+.tbd {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 1.32cqh;
+  letter-spacing: 0.1em;
+  color: #1a0b0b;
+  background: #fcd34d;
+  border-radius: 4px;
+  padding: 0.1cqh 0.5cqw;
+  vertical-align: middle;
+  margin-left: 0.6cqw;
+}
+.sub {
+  font-size: 2.64cqh;
+  color: var(--n300);
+  line-height: 1.45;
+  margin-top: 2.4cqh;
+  max-width: 70cqw;
+}
+.title h1 {
+  font-size: 11cqh;
+  max-width: 82cqw;
+}
+.title h1.talk{font-size:8.36cqh;max-width:88cqw;line-height:1.06}
+.title h1.talk .soft{font-weight:300;color:var(--n300);letter-spacing:-.02em}
+.title h1.talk .grad{filter:drop-shadow(0 0 3.2cqh rgba(192,38,211,.35))}
+.title h1.talk sub.using{display:inline-flex;align-items:center;gap:.9cqw;vertical-align:baseline;position:relative;top:.5cqh;margin-left:1.4cqw;
+  font-family:var(--mono);font-weight:400;font-size:2.53cqh;letter-spacing:.18em;text-transform:uppercase;color:#f0abfc;white-space:nowrap}
+.title h1.talk sub.using i{display:block;width:3.4cqw;height:2px;background:var(--grad-brand)}
+.byline {
+  display: flex;
+  gap: 2.4cqw;
+  align-items: center;
+  margin-top: 5cqh;
+  font-family: var(--mono);
+  font-size: 2.09cqh;
+  color: var(--n300);
+}
+.byline b {
+  color: #fff;
+  font-family: var(--sans);
+  font-size: 2.86cqh;
+}
+.byline .sep {
+  width: 1px;
+  height: 3cqh;
+  background: rgba(245, 208, 254, 0.3);
+}
+/* bio */
+.bio {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 3.4cqw;
+  align-items: center;
+  margin-top: 3.6cqh;
+}
+.avatar {
+  width: 24cqh;
+  height: 24cqh;
+  border-radius: 50%;
+  background: var(--grad-brand);
+  display: grid;
+  place-items: center;
+  font-size: 8.8cqh;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  box-shadow: 0 0 0 6px rgba(192, 38, 211, 0.18);
+}
+.facts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.6cqh 1.6cqw;
+}
+.fact {
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(245, 208, 254, 0.16);
+  border-radius: 14px;
+  padding: 1.8cqh 1.6cqw;
+}
+.fact .k {
+  font-family: var(--mono);
+  font-size: 1.43cqh;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #f0abfc;
+}
+.fact .v {
+  font-size: 2.2cqh;
+  margin-top: 0.6cqh;
+  color: var(--n200);
+  line-height: 1.4;
+}
+/* repo + qr */
+.follow {
+  display: grid;
+  grid-template-columns: 1fr 36cqh;
+  gap: 4cqw;
+  align-items: center;
+  margin-top: 3.6cqh;
+}
+.qr {
+  background: #fff;
+  border-radius: 18px;
+  padding: 2.6cqh;
+  width: 36cqh;
+  height: 36cqh;
+}
+.qr svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.repo {
+  font-family: var(--mono);
+  font-size: 3.52cqh;
+  color: #fff;
+  word-break: break-all;
+}
+.steps {
+  margin-top: 3cqh;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2cqh;
+}
+.steps div {
+  font-family: var(--mono);
+  font-size: 2.09cqh;
+  color: var(--n300);
+}
+.steps b {
+  color: var(--fuchsia-400);
+  margin-right: 1cqw;
+}
+/* deterministic vs agent */
+.split {
+  display: grid;
+  grid-template-columns: 1fr 12cqw 1fr;
+  gap: 1.4cqw;
+  margin-top: 3.6cqh;
+  align-items: center;
+}
+.lane {
+  border-radius: 18px;
+  padding: 2.6cqh 2cqw;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2cqh;
+  opacity: 0;
+  animation: fadeup 0.6s ease forwards;
+}
+.lane h3 {
+  font-size: 2.86cqh;
+}
+.lane .k {
+  font-family: var(--mono);
+  font-size: 1.43cqh;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.lane ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9cqh;
+}
+.lane li {
+  font-size: 2.035cqh;
+  color: var(--n200);
+  padding-left: 1.4cqw;
+  position: relative;
+}
+.lane li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.9cqh;
+  width: 0.6cqw;
+  height: 2px;
+  background: currentColor;
+  opacity: 0.6;
+}
+.lane.det {
+  border: 1px solid rgba(54, 211, 153, 0.45);
+  background: rgba(54, 211, 153, 0.06);
+}
+.lane.det .k {
+  color: var(--green);
+}
+.lane.ai {
+  border: 1px solid rgba(192, 38, 211, 0.7);
+  background: rgba(192, 38, 211, 0.12);
+  animation-delay: 0.5s;
+}
+.lane.ai .k {
+  color: var(--fuchsia-400);
+}
+.mid {
+  display: flex;
+  flex-direction: column;
+  gap: 3cqh;
+  font-family: var(--mono);
+  font-size: 1.54cqh;
+  color: var(--n400);
+  text-align: center;
+}
+.mid .ar {
+  height: 2px;
+  position: relative;
+  overflow: hidden;
+  background: rgba(245, 208, 254, 0.15);
+  margin-top: 1cqh;
+}
+.mid .ar::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  height: 2px;
+  width: 40%;
+  background: var(--fuchsia-400);
+  animation: slide-r 1.6s linear infinite;
+}
+.mid .ar.l::after {
+  background: var(--green);
+  animation-name: slide-l;
+}
+@keyframes slide-r {
+  from {
+    left: -40%;
+  }
+  to {
+    left: 100%;
+  }
+}
+@keyframes slide-l {
+  from {
+    left: 100%;
+  }
+  to {
+    left: -40%;
+  }
+}
+@keyframes fadeup {
+  from {
+    opacity: 0;
+    transform: translateY(1.2cqh);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+/* challenge cards */
+.ch3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.8cqw;
+  margin-top: 3.6cqh;
+}
+.ch3 .chk {
+  opacity: 0;
+  animation: fadeup 0.5s ease forwards;
+}
+.ch3 .chk:nth-child(2) {
+  animation-delay: 0.25s;
+}
+.ch3 .chk:nth-child(3) {
+  animation-delay: 0.5s;
+}
+.ch3 .chk h3 {
+  font-size: 2.86cqh;
+}
+.ch3 .chk p {
+  font-size: 1.925cqh;
+}
+.factors {
+  display: grid;
+  grid-template-columns: repeat(7, auto);
+  gap: 1cqw;
+  margin-top: 3cqh;
+}
+.factors div {
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 1.76cqh;
+  color: #e9d6f7;
+  border: 1px solid rgba(245, 208, 254, 0.22);
+  border-radius: 999px;
+  padding: 1.1cqh 0.6cqw;
+}
+/* svg diagrams */
+.diagram {
+  margin-top: 2cqh;
+  width: 100%;
+  height: 54cqh;
+}
+.diagram svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.diagram text {
+  font-family: var(--sans);
+  fill: #fff;
+}
+.diagram .mono {
+  font-family: var(--mono);
+  fill: var(--n400);
+}
+.diagram .lbl {
+  font-family: var(--mono);
+  fill: #f0abfc;
+}
+.diagram .box {
+  fill: #121430;
+  stroke: rgba(245, 208, 254, 0.3);
+  stroke-width: 1.5;
+}
+.diagram .box.agent {
+  fill: #2b1242;
+  stroke: rgba(192, 38, 211, 0.85);
+}
+.diagram .box.ok {
+  fill: #0f2329;
+  stroke: rgba(54, 211, 153, 0.55);
+}
+.diagram .box.no {
+  fill: #2a1220;
+  stroke: rgba(248, 113, 113, 0.55);
+}
+.diagram .box.lock {
+  stroke-dasharray: 6 5;
+}
+.diagram .flowl {
+  fill: none;
+  stroke: var(--fuchsia-400);
+  stroke-width: 2.2;
+  stroke-dasharray: 9 7;
+  animation: dash 1.2s linear infinite;
+}
+.diagram .flowl.g {
+  stroke: var(--green);
+}
+.diagram .flowl.r {
+  stroke: var(--red);
+}
+.diagram .flowl.n {
+  stroke: rgba(245, 208, 254, 0.45);
+}
+@keyframes dash {
+  to {
+    stroke-dashoffset: -32;
+  }
+}
+.diagram .n {
+  opacity: 0;
+  animation: fadeup 0.5s ease forwards;
+}
+.diagram .d1 {
+  animation-delay: 0.1s;
+}
+.diagram .d2 {
+  animation-delay: 0.4s;
+}
+.diagram .d3 {
+  animation-delay: 0.7s;
+}
+.diagram .d4 {
+  animation-delay: 1s;
+}
+.diagram .d5 {
+  animation-delay: 1.3s;
+}
+.diagram .d6 {
+  animation-delay: 1.6s;
+}
+.diagram .d7 {
+  animation-delay: 1.9s;
+}
+
+
+/* light mode: inverts the whole stage, hue kept; QR re-inverted so it scans */
+html.light .stage{filter:invert(1) hue-rotate(180deg)}
+html.light .qr{filter:invert(1) hue-rotate(180deg)}
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="slidenum" id="slidenum"></div>
+<div class="stage">
+  <div class="bg"><div class="orb a"></div><div class="orb b"></div><div class="grid"></div><div class="stream" id="stream"></div></div>
+
+  <!-- 1 · TITLE -->
+  <section class="slide">
+    <div class="chrome-top"><span class="mark">zyte<span class="dot">.</span></span><span class="eyebrow">Extract Summit · Austin 2026</span></div>
+    <div class="body title">
+      <div class="kicker">Workshop</div>
+      <h1 class="talk">Loop Engineer <span class="soft">your way to</span><br><span class="grad">Self-Healing Spiders</span><sub class="using"><i></i>using AI Agents</sub></h1>
+      <p class="sub">Would you let an agent fix your production spider at 3am, with nobody watching?</p>
+      <div class="byline"><b>Ayan Pahwa</b><span class="sep"></span><span>Developer Advocate, Zyte</span></div>
+    </div>
+    <div class="footer"><span>loop engineer your way to self-healing spiders</span><span>Intro</span></div>
+  </section>
+  <!-- 2 · ABOUT -->
+  <section class="slide">
+    <div class="chrome-top"><span class="mark">zyte<span class="dot">.</span></span><span class="eyebrow">About me</span></div>
+    <div class="body">
+      <div class="kicker">Hi, I'm</div>
+      <h2>Ayan <span class="grad">Pahwa</span></h2>
+      <div class="bio">
+        <div class="facts">
+          <div class="fact"><div class="k">Day job</div><div class="v">Developer Advocate at Zyte, the company behind Scrapy</div></div>
+          <div class="fact"><div class="k">Writing</div><div class="v">Harness Engineering series and "loop engineering" on zyte.com/blog</div></div>
+          <div class="fact"><div class="k">Before scraping</div><div class="v">Embedded and IoT security, CVE-2017-18642 <span class="tbd">CHECK</span></div></div>
+          <div class="fact"><div class="k">Find me</div><div class="v">codensolder.com · github.com/iayanpahwa <span class="tbd">HANDLES</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><span>about the speaker</span><span>Intro</span></div>
+  </section>
+  <!-- 3 · FOLLOW ALONG -->
+  <section class="slide">
+    <div class="chrome-top"><span class="mark">zyte<span class="dot">.</span></span><span class="eyebrow">Follow along</span></div>
+    <div class="body">
+      <div class="kicker">Everything you see tonight is in one repo</div>
+      <h2>Clone it and <span class="grad">run it yourself</span></h2>
+      <div class="follow">
+        <div>
+          <div class="repo">github.com/zytelabs/self-healing-spiders</div>
+          <div class="steps">
+            <div><b>1</b>git clone the repo</div>
+            <div><b>2</b>cd brittle-selector-healing &amp;&amp; uv sync  ·  needs uv and a signed-in claude</div>
+            <div><b>3</b>README.md has every command from the slides</div>
+          </div>
+        </div>
+        <div class="qr"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 29 29" shape-rendering="crispEdges" class="segno"><path fill="#fff" d="M0 0h29v29h-29z"/><path class="qrline" stroke="#0b0d25" d="M0 0.5h7m1 0h4m2 0h1m2 0h2m3 0h7m-29 1h1m5 0h1m4 0h3m2 0h1m2 0h2m1 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m2 0h1m1 0h1m1 0h1m1 0h2m2 0h2m1 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m3 0h4m2 0h2m4 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m3 0h5m1 0h1m1 0h2m2 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m2 0h1m1 0h2m4 0h1m2 0h1m1 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-21 1h2m2 0h2m2 0h1m1 0h3m-21 1h2m1 0h2m1 0h1m2 0h1m2 0h1m1 0h4m2 0h1m1 0h1m5 0h1m-26 1h2m2 0h1m2 0h1m1 0h4m2 0h2m1 0h1m1 0h2m1 0h2m-28 1h1m3 0h1m1 0h1m1 0h2m1 0h1m1 0h1m1 0h1m1 0h2m1 0h1m2 0h2m1 0h1m-24 1h2m3 0h1m3 0h1m3 0h2m1 0h1m1 0h3m1 0h1m2 0h1m-29 1h2m3 0h3m1 0h3m4 0h1m5 0h2m4 0h1m-28 1h1m1 0h2m4 0h3m1 0h4m1 0h1m3 0h7m-28 1h2m1 0h4m4 0h1m1 0h2m1 0h6m1 0h1m1 0h1m1 0h1m-28 1h3m1 0h1m2 0h1m2 0h2m5 0h2m3 0h2m1 0h1m1 0h1m-29 1h3m2 0h2m4 0h1m1 0h2m4 0h3m3 0h1m-26 1h1m2 0h2m2 0h3m3 0h1m1 0h3m1 0h1m4 0h1m1 0h2m-28 1h2m4 0h1m2 0h3m1 0h1m1 0h2m1 0h2m4 0h2m2 0h1m-29 1h4m4 0h1m4 0h1m1 0h2m2 0h1m2 0h1m2 0h2m-27 1h3m1 0h1m1 0h2m2 0h1m1 0h1m1 0h5m1 0h8m-20 1h1m2 0h1m3 0h1m1 0h2m1 0h1m3 0h2m-26 1h7m2 0h1m1 0h5m3 0h2m1 0h1m1 0h2m-26 1h1m5 0h1m3 0h2m2 0h1m2 0h1m1 0h2m3 0h1m3 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m2 0h2m3 0h1m2 0h7m1 0h2m-29 1h1m1 0h3m1 0h1m1 0h4m1 0h1m1 0h2m4 0h1m5 0h2m-29 1h1m1 0h3m1 0h1m2 0h1m3 0h1m1 0h1m1 0h2m1 0h2m1 0h2m1 0h3m-29 1h1m5 0h1m1 0h2m2 0h1m1 0h1m7 0h2m1 0h2m1 0h1m-29 1h7m1 0h2m2 0h2m1 0h1m3 0h2m1 0h1m1 0h1"/></svg>
+</div>
+      </div>
+    </div>
+    <div class="footer"><span>scan to follow along</span><span>Intro</span></div>
+  </section>
+  <!-- 4 · DEFINITION -->
+  <section class="slide">
+    <div class="chrome-top"><span class="mark">zyte<span class="dot">.</span></span><span class="eyebrow">What we mean</span></div>
+    <div class="body">
+      <div class="kicker">Self-healing scraper</div>
+      <h2>Notices its data went wrong, fixes itself <span class="grad">within limits you set</span>, or hands over</h2>
+      <div class="ch3">
+        <div class="chk gold"><span class="tag yes">this talk</span><h3>Fragile selectors</h3><p>A redesign moves the class names. The page still has the data, the spider just can't find it. An agent can read the new markup and fix that.</p></div>
+        <div class="chk"><span class="tag part">sometimes</span><h3>JS rendering</h3><p>The HTML arrives empty. Often the data is already in the page as inline JSON, so the fix is parsing that, not a browser. Sometimes you need a browser.</p></div>
+        <div class="chk"><span class="tag no">not a selector fix</span><h3>Blocking</h3><p>A bot wall sends a challenge page, not the markup. No selector heals that. Fix access first, for example with Zyte API.</p></div>
+      </div>
+    </div>
+    <div class="footer"><span>the demos tonight heal the first kind</span><span>Intro</span></div>
+  </section>
+  <!-- 5 · DETERMINISTIC VS AGENT -->
+  <section class="slide">
+    <div class="chrome-top"><span class="mark">zyte<span class="dot">.</span></span><span class="eyebrow">My setup</span></div>
+    <div class="body">
+      <div class="kicker">Two kinds of parts</div>
+      <h2>The agent proposes. <span class="grad">The script decides.</span></h2>
+      <div class="split">
+        <div class="lane det"><span class="k">Deterministic · plain code</span><h3>The scraper and its judge</h3><ul>
+          <li>Scrapy spider: same input, same output</li>
+          <li>Checks and an answer key</li>
+          <li>Guard: locked files, reverted on edit</li>
+          <li>Attempt cap and budget</li>
+          <li>Re-runs the crawl and checks itself</li></ul></div>
+        <div class="mid"><div>a diff<div class="ar"></div></div><div>PASS / FAIL<div class="ar l"></div></div></div>
+        <div class="lane ai"><span class="k">Non-deterministic · an LLM</span><h3>The healer</h3><ul>
+          <li>Reads the broken output and the page</li>
+          <li>Edits one file</li>
+          <li>Different path every run</li>
+          <li>Its "it works" counts for nothing</li></ul></div>
+      </div>
+    </div>
+    <div class="footer"><span>keep the LLM in one box, with a lid</span><span>Intro</span></div>
+  </section>
+  <!-- 6 · DISCLAIMERS -->
+  <section class="slide">
+    <div class="chrome-top"><span class="mark">zyte<span class="dot">.</span></span><span class="eyebrow">Before we start</span></div>
+    <div class="body">
+      <div class="kicker">LLMs are non-deterministic</div>
+      <h2>Your mileage <span class="grad">may vary</span></h2>
+      <div class="factors"><div>model</div><div>effort</div><div>tool access</div><div>page complexity</div><div>cost</div><div>system prompt</div><div>user prompt</div></div>
+      <div class="term sm"><span class="c"># same break, same prompt, same model: the first tool call in 3 heals, 29 Sep</span>
+→ Bash ls -R | head -30 &amp;&amp; cat books.py &amp;&amp; head -c 3000 site/v2.html
+→ Bash ls -R | head -50 &amp;&amp; cat books.py &amp;&amp; cat check.py &amp;&amp; head -c 4000 site/v2.html
+→ Bash ls -R &amp;&amp; cat books.py &amp;&amp; cat site/v2.html | head -80</div>
+      <div class="stats">
+        <div class="stat"><div class="v grad">$0.07–0.16</div><div class="l">cost</div></div>
+        <div class="stat"><div class="v">24–31s</div><div class="l">wall clock</div></div>
+        <div class="stat"><div class="v">4–7</div><div class="l">agent turns</div></div>
+      </div>
+      <p class="note">7 heals of the same break, Claude Opus 5.5, 28–29 Sep 2026. Tonight is one more sample, not the average.</p>
+    </div>
+    <div class="footer"><span>every number in this talk has a run count and a date</span><span>Intro</span></div>
+  </section>
+  <!-- 7 · CLAUDE -P -->
+  <section class="slide">
+    <div class="chrome-top"><span class="mark">zyte<span class="dot">.</span></span><span class="eyebrow">My setup · the agent</span></div>
+    <div class="body">
+      <div class="kicker">The agent in both demos</div>
+      <h2>Claude Code, <span class="grad">headless</span>: claude -p</h2>
+      <div class="cfg">
+        <div class="panel"><div class="hd"><b>brittle-selector-healing/heal.sh</b><span>lines 19–21, 71</span></div><pre>opts=(--permission-mode bypassPermissions \
+  --tools "${TOOLS// /,}" --strict-mcp-config)
+[ -n "$MODEL" ] &amp;&amp; opts+=(--model "$MODEL")
+[ -n "$EFFORT" ] &amp;&amp; opts+=(--effort "$EFFORT")
+
+"$CLAUDE" -p "$prompt" --output-format stream-json \
+  --verbose "${opts[@]}"</pre></div>
+        <div class="knobs">
+          <div class="knob"><div class="n">-p</div><div class="d">one prompt in, one session, then it exits. No chat window, same agent: it reads files, runs commands, edits code.</div></div>
+          <div class="knob"><div class="n">stream-json</div><div class="d">every step is a JSON line. The script prints the tool calls as → lines and reads cost and turns off the last one.</div></div>
+          <div class="knob"><div class="n">bypassPermissions</div><div class="d">nobody is there to click "allow", so nothing asks. That is why the tool list has to be tight.</div></div>
+          <div class="knob"><div class="n">--tools, --strict-mcp-config</div><div class="d">the only tools it gets, and none of the MCP servers configured on this laptop.</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><span>long lines wrapped, the pipe to the log trimmed</span><span>Intro</span></div>
+  </section>
+  <!-- 8a · DEMO 1 · THE PAGE -->
+  <section class="slide">
+    <div class="chrome-top"><span class="mark">zyte<span class="dot">.</span></span><span class="eyebrow">Demo 1 · fix it after the crawl</span></div>
+    <div class="body">
+      <div class="kicker">A spider scrapes a bookshop every night</div>
+      <h2>Three selectors, <span class="grad">three fields</span></h2>
+      <div class="pair">
+        <div class="panel"><div class="hd"><b>site/v1.html</b><span>Inspect, first book</span></div><pre>&lt;article class="product_pod"&gt;
+  &lt;h3 class="<span class="sel">title</span>"&gt;A Light in the Attic&lt;/h3&gt;
+  &lt;p class="<span class="sel">price_color</span>"&gt;£51.77&lt;/p&gt;
+  &lt;p class="instock <span class="sel">availability</span>"&gt;In stock&lt;/p&gt;
+&lt;/article&gt;</pre></div>
+        <div class="panel"><div class="hd"><b>books.py</b><span>lines 17–24</span></div><pre style="font-size:1.45cqh">def parse(self, response):
+    for book in response.css("article.product_pod"):
+        price = book.css("<span class="sel">p.price_color</span>::text").get()
+        yield {
+            "title": book.css("<span class="sel">h3.title</span>::text").get(),
+            "price": float(price.strip("£")) if price else None,
+            "availability": book.css("<span class="sel">p.availability</span>::text").get(),
+        }</pre></div>
+      </div>
+    </div>
+    <div class="footer"><span>runs locally from /tmp/brittle-selector-healing, no network</span><span>Demo 1</span></div>
+  </section>
+  <!-- 8b · DEMO 1 · SCRAPE + CHECK -->
+  <section class="slide">
+    <div class="chrome-top"><span class="mark">zyte<span class="dot">.</span></span><span class="eyebrow">Demo 1 · live scrape</span></div>
+    <div class="body">
+      <div class="kicker">Live</div>
+      <h2>Scrape, read the logs, <span class="grad">check the data</span></h2>
+      <div class="term sm"><span class="p">$</span> uv run scrapy runspider books.py -a site=v1 -O out.json -L INFO
+<span class="dim">… Scrapy logs …</span>
+ 'item_scraped_count': 10,
+<span class="p">$</span> jq -c &#x27;.[]&#x27; out.json
+{"title":"A Light in the Attic","price":51.77,"availability":"In stock"}
+<span class="dim">… 9 more</span>
+<span class="p">$</span> uv run python check.py
+<span class="ok">✓ item count   ✓ fields present   ✓ values sane   ✓ golden sample</span></div>
+      <p class="lead" style="font-size:2.2cqh">Four checks. The last one is an answer key: 3 books checked by hand.</p>
+    </div>
+    <div class="footer"><span>real output, trimmed, 28 Sep 2026</span><span>Demo 1</span></div>
+  </section>
+  <!-- 8c · DEMO 1 · SITE CHANGED -->
+  <section class="slide">
+    <div class="chrome-top"><span class="mark">zyte<span class="dot">.</span></span><span class="eyebrow">Demo 1 · one night</span></div>
+    <div class="body">
+      <div class="kicker">The page changed. Same command</div>
+      <h2>It broke. <span class="grad">Nothing crashed.</span></h2>
+      <div class="pair" style="margin-top:2.4cqh">
+        <div class="panel"><div class="hd"><b>site/v2.html</b><span>Inspect, first book</span></div><pre>&lt;h2 class="<span class="sel">book-card__name</span>"&gt;A Light in the Attic&lt;/h2&gt;
+&lt;s class="<span class="trap">price price--was</span>"&gt;£64.71&lt;/s&gt;
+&lt;span class="<span class="sel">price price--now</span>"&gt;£51.77&lt;/span&gt;
+&lt;span class="book-card__stock" <span class="sel">data-stock="in"</span>&gt;</pre></div>
+        <div class="panel"><div class="hd"><b>terminal</b><span>scrape v2, then check</span></div><pre> 'item_scraped_count': 10,
+<span class="no">{"title":null,"price":null,"availability":null}</span>
+✓ item count
+<span class="no">✗ fields present</span>
+– values sane (skipped: every value is empty)
+<span class="no">✗ golden sample</span></pre></div>
+      </div>
+      <p class="lead" style="font-size:2.09cqh">"10 items scraped", no error. Every field is empty. Note the struck-through £64.71, it matters later.</p>
+    </div>
+    <div class="footer"><span>real output, trimmed, 28 Sep 2026</span><span>Demo 1</span></div>
+  </section>
+  <!-- 9a · POLL + HEAL WITHOUT TOOLS -->
+  <section class="slide">
+    <div class="chrome-top"><span class="mark">zyte<span class="dot">.</span></span><span class="eyebrow">Demo 1 · live heal</span></div>
+    <div class="body">
+      <div class="kicker">Hands up</div>
+      <h2>An agent tries to fix it. <span class="grad">What happens?</span></h2>
+      <div class="poll">
+        <div class="opt"><div class="k">A</div><div class="t">Fixed in one go</div><div class="d">attempt 1, green</div></div>
+        <div class="opt"><div class="k">B</div><div class="t">Fixed after retries</div><div class="d">attempt 2</div></div>
+        <div class="opt"><div class="k">C</div><div class="t">Can't fix it</div><div class="d">2 fails, a human gets ESCALATION.md</div></div>
+      </div>
+      <div class="term sm"><span class="p">$</span> ./heal.sh
+▶ model: default · effort: default · attempts: 2 · budget: $10
+━━ attempt 1/2 ━━  agent working…</div>
+    </div>
+    <div class="footer"><span>first lines of a real run</span><span>Demo 1</span></div>
+  </section>
+  <!-- 9b · FIX TOOL ACCESS -->
+  <section class="slide">
+    <div class="chrome-top"><span class="mark">zyte<span class="dot">.</span></span><span class="eyebrow">Demo 1 · tool access</span></div>
+    <div class="body">
+      <div class="kicker">It found the fix. It had no way to write it</div>
+      <h2>No tools, <span class="grad">no heal</span></h2>
+      <div class="pair">
+        <div class="panel"><div class="hd"><b>heal.sh</b><span>lines 14–15</span></div><pre><span class="pre-k">TOOLS</span>=<span class="pre-v">"Read Grep Glob"</span>   <span class="pre-c"># the only tools it gets</span>
+<span class="no"># TOOLS="$TOOLS Bash"</span>      <span class="pre-c"># run the crawl and the checks, write books.py</span>
+
+<span class="pre-c">uncomment line 15, save, run it again</span>
+<span class="ok">TOOLS="$TOOLS Bash"</span></pre></div>
+        <div class="panel"><div class="hd"><b>what it cost</b><span>3 runs each, 29 Sep</span></div><pre>Read, Grep, Glob   <span class="no">escalated 3 of 3</span>   $0.11–0.24
++ Bash             <span class="ok">healed 3 of 3</span>       $0.07–0.12
+                   attempt 1, 26–31s</pre></div>
+      </div>
+      <p class="lead" style="font-size:2.09cqh">An allowlist: read, search, a shell. No web, no MCP servers, no subagents.</p>
+    </div>
+    <div class="footer"><span>Claude Opus 5.5, 29 Sep 2026</span><span>Demo 1</span></div>
+  </section>
+  <!-- 9c · HEALED -->
+  <section class="slide">
+    <div class="chrome-top"><span class="mark">zyte<span class="dot">.</span></span><span class="eyebrow">Demo 1 · healed</span></div>
+    <div class="body">
+      <div class="kicker">Result</div>
+      <h2>Healed on <span class="grad">attempt 1 of 2</span></h2>
+      <div class="stats">
+        <div class="stat"><div class="v grad">$0.07–0.16</div><div class="l">cost</div></div>
+        <div class="stat"><div class="v">24–31s</div><div class="l">wall clock</div></div>
+        <div class="stat"><div class="v">1/2</div><div class="l">attempts, every run</div></div>
+      </div>
+      <div class="term sm"><span class="p">$</span> uv run python check.py
+<span class="ok">✓ item count   ✓ fields present   ✓ values sane   ✓ golden sample</span></div>
+      <p class="note">7 heals with a shell, 28–29 Sep 2026, Claude Opus 5.5. heal.sh re-ran the crawl and the checks itself: in 0 of 3 heals did the agent run them.</p>
+    </div>
+    <div class="footer"><span>printed by heal.sh after every attempt</span><span>Demo 1</span></div>
+  </section>
+  <!-- 10a · ANOTHER FIX -->
+  <section class="slide">
+    <div class="chrome-top"><span class="mark">zyte<span class="dot">.</span></span><span class="eyebrow">Demo 1 · another fix</span></div>
+    <div class="body">
+      <div class="kicker">Green. But is it right?</div>
+      <h2>Here's another fix. <span class="grad">Would you ship it?</span></h2>
+      <div class="term sm"><span class="p">$</span> uv run scrapy runspider books_wrong.py -O wrong.json -L ERROR
+<span class="p">$</span> jq -c &#x27;.[]&#x27; wrong.json
+{"title":"A Light in the Attic","price":64.71,"availability":"In stock"}
+{"title":"Tipping the Velvet","price":67.17,"availability":"In stock"}
+{"title":"Soumission","price":62.62,"availability":"In stock"}
+<span class="dim">… 7 more, every field filled in</span></div>
+      <p class="lead">Titles, prices, stock, all there, all plausible. The kind of fix a rushed human or a weaker agent writes.</p>
+    </div>
+    <div class="footer"><span>books_wrong.py · a saved wrong fix</span><span>Demo 1</span></div>
+  </section>
+  <!-- 10b · THE ANSWER KEY -->
+  <section class="slide">
+    <div class="chrome-top"><span class="mark">zyte<span class="dot">.</span></span><span class="eyebrow">Demo 1 · checks</span></div>
+    <div class="body">
+      <div class="kicker">How do you verify?</div>
+      <h2>Only the <span class="grad">answer key</span> knows</h2>
+      <table class="vtable">
+        <tr><th>Check</th><th>What it asks</th><th>Wrong fix</th></tr>
+        <tr><td>Item count</td><td>Did we get 10 books?</td><td class="ok">✓ passes</td></tr>
+        <tr><td>Fields present</td><td>Is every field filled in?</td><td class="ok">✓ passes</td></tr>
+        <tr><td>Values sane</td><td>Is the price a number between 1 and 200? £64.71 is.</td><td class="ok">✓ passes</td></tr>
+        <tr class="key"><td><b>Golden sample</b></td><td>Is A Light in the Attic actually £51.77?</td><td class="no">✗ got £64.71</td></tr>
+      </table>
+      <p class="lead" style="font-size:2.2cqh">It took the struck-through old price. Every price is 25% too high. Check values, not presence.</p>
+    </div>
+    <div class="footer"><span>check.py</span><span>Demo 1</span></div>
+  </section>
+  <!-- 11 · ANECDOTES -->
+  <section class="slide">
+    <div class="chrome-top"><span class="mark">zyte<span class="dot">.</span></span><span class="eyebrow">Anecdotes</span></div>
+    <div class="body">
+      <div class="divider" style="flex:none">
+        <div class="kicker">While building this</div>
+        <h1>Things that <span class="grad">surprised me</span></h1>
+      </div>
+    </div>
+    <div class="footer"><span>rehearsal runs, 28–29 Sep 2026</span><span>Anecdotes</span></div>
+  </section>
+  <!-- 12 · LEARNINGS DEMO 1 -->
+  <section class="slide">
+    <div class="chrome-top"><span class="mark">zyte<span class="dot">.</span></span><span class="eyebrow">Demo 1 · what we learned</span></div>
+    <div class="body">
+      <div class="kicker">What to take home</div>
+      <h2>Eight things <span class="grad">from Demo 1</span></h2>
+      <div class="bp four">
+        <div class="chk"><span class="ix">01</span><h3>Use a good model</h3><p>Then measure it. Swap the model and you swap the agent: re-run your numbers after every change.</p></div>
+        <div class="chk"><span class="ix">02</span><h3>Prompt for correct</h3><p>Say what correct data is and that it may give up. "Make the check pass" invites a fake.</p></div>
+        <div class="chk"><span class="ix">03</span><h3>Let it test, then re-check</h3><p>Give it the command that proves the fix. In 3 of 3 heals it never ran it: the script's re-check did the proving.</p></div>
+        <div class="chk"><span class="ix">04</span><h3>Keep cost in control</h3><p>An attempt cap and a budget. The heal with no tools still cost $0.11–0.24 and fixed nothing.</p></div>
+        <div class="chk"><span class="ix">05</span><h3>Escalate early</h3><p>Two attempts, then a human. In every failed run here, the agent's own message named the cause.</p></div>
+        <div class="chk"><span class="ix">06</span><h3>Control tool access</h3><p>Read, search and a shell. No web, no MCP servers, no subagents.</p></div>
+        <div class="chk gold"><span class="ix">07</span><h3>Allowlist, not denylist</h3><p>We denied Bash, Edit and Write. In 1 of 5 runs it found Monitor through ToolSearch and wrote books.py with that.</p></div>
+        <div class="chk"><span class="ix">08</span><h3>Isolate the agent</h3><p>Headless still loads your setup: it saw this laptop's MCP servers until <code>--strict-mcp-config</code>. Rehearse from /tmp.</p></div>
+      </div>
+    </div>
+    <div class="footer"><span>rehearsal runs, Claude Opus 5.5, 28–29 Sep 2026</span><span>Demo 1</span></div>
+  </section>
+  <!-- 13 · LOOPS NOT PROMPTS -->
+  <section class="slide">
+    <div class="chrome-top"><span class="mark">zyte<span class="dot">.</span></span><span class="eyebrow">Loop engineering</span></div>
+    <div class="body">
+      <div class="divider" style="flex:none">
+        <div class="kicker">The idea behind both demos</div>
+        <h1>Loops, <span class="grad">not prompts</span></h1>
+        <p class="sub">The prompt is one box. What makes it safe is everything around it.</p>
+      </div>
+    </div>
+    <div class="footer"><span>zyte.com/blog · "Now what exactly is loop engineering", Jun 2026</span><span>Loops</span></div>
+  </section>
+  <!-- 13b · LOOP QUOTES -->
+  <section class="slide">
+    <div class="chrome-top"><span class="mark">zyte<span class="dot">.</span></span><span class="eyebrow">Loop engineering</span></div>
+    <div class="body">
+      <div style="display:flex;gap:2.4cqw;align-items:center;justify-content:center;margin-top:4cqh">
+        <img src="assets/steipete-loops-tweet.jpg" alt="Peter Steinberger on X: you should be designing loops that prompt your agents" style="flex:1;min-width:0;max-height:62cqh;object-fit:contain;border-radius:14px">
+        <img src="assets/karpathy-success-criteria.jpg" alt="Andrej Karpathy: don't tell the model what to do, give it success criteria and watch it go" style="flex:1;min-width:0;max-height:62cqh;object-fit:contain;border-radius:14px">
+      </div>
+    </div>
+    <div class="footer"><span>Peter Steinberger on X, 8 Jun 2026 · Andrej Karpathy</span><span>Loops</span></div>
+  </section>
+  <!-- 14 · LOOP MAP -->
+  <section class="slide">
+    <div class="chrome-top"><span class="mark">zyte<span class="dot">.</span></span><span class="eyebrow">Loop engineering · the map</span></div>
+    <div class="body">
+      <div class="kicker">Every part of Demo 1 is a loop element</div>
+      <h2>Five steps, <span class="grad">one budget</span></h2>
+      <div class="diagram"><svg viewBox="0 0 1400 560" role="img" aria-label="Loop: detect, context, act, verify, decide, around a budget">
+        <ellipse id="loopPath" cx="700" cy="290" rx="500" ry="200" fill="none" stroke="rgba(245,208,254,.18)" stroke-width="2"/>
+        <ellipse cx="700" cy="290" rx="500" ry="200" class="flowl" />
+        <circle r="9" fill="#e879f9"><animateMotion dur="7s" repeatCount="indefinite" path="M1200 290 A500 200 0 1 1 200 290 A500 200 0 1 1 1200 290"/></circle>
+        <g class="n d1"><text x="700" y="275" text-anchor="middle" font-size="28" font-weight="700">Budget</text><text x="700" y="310" text-anchor="middle" class="mono" font-size="19">2 attempts · $10 cap · every transcript kept</text></g>
+        <g class="n d2"><rect x="550" y="40" width="300" height="100" rx="14" class="box ok"/><text x="700" y="80" text-anchor="middle" font-size="26" font-weight="700">1 · Detect</text><text x="700" y="115" text-anchor="middle" class="mono" font-size="18">check.py, 4 checks</text></g>
+        <g class="n d3"><rect x="1025" y="178" width="300" height="100" rx="14" class="box"/><text x="1175" y="218" text-anchor="middle" font-size="26" font-weight="700">2 · Context</text><text x="1175" y="253" text-anchor="middle" class="mono" font-size="18">prompt + check output</text></g>
+        <g class="n d4"><rect x="844" y="402" width="300" height="100" rx="14" class="box agent"/><text x="994" y="442" text-anchor="middle" font-size="26" font-weight="700">3 · Act</text><text x="994" y="477" text-anchor="middle" class="mono" font-size="18">claude -p · allowlist</text></g>
+        <g class="n d5"><rect x="256" y="402" width="300" height="100" rx="14" class="box ok"/><text x="406" y="442" text-anchor="middle" font-size="26" font-weight="700">4 · Verify</text><text x="406" y="477" text-anchor="middle" class="mono" font-size="18">heal.sh re-check</text></g>
+        <g class="n d6"><rect x="75" y="178" width="300" height="100" rx="14" class="box"/><text x="225" y="218" text-anchor="middle" font-size="26" font-weight="700">5 · Decide</text><text x="225" y="253" text-anchor="middle" class="mono" font-size="18">PASS ship · FAIL retry</text></g>
+        <path d="M200 278 L150 420" class="flowl r"/><g class="n d7"><rect x="40" y="420" width="190" height="64" rx="12" class="box no"/><text x="135" y="460" text-anchor="middle" class="mono" font-size="17" style="fill:#fca5a5">ESCALATION.md</text></g>
+      </svg></div>
+    </div>
+    <div class="footer"><span>Demo 2 swaps Detect for Spidermon and Verify for fixture tests</span><span>Loops</span></div>
+  </section>
+  <!-- 15 · DEMO 1 ARCHITECTURE -->
+  <section class="slide">
+    <div class="chrome-top"><span class="mark">zyte<span class="dot">.</span></span><span class="eyebrow">Loop engineering · Demo 1, whole project</span></div>
+    <div class="body">
+      <div class="kicker">brittle-selector-healing/, every file</div>
+      <h2>The whole project <span class="grad">on one screen</span></h2>
+      <div class="diagram"><svg viewBox="0 0 1400 520" role="img" aria-label="Demo 1 architecture">
+        <path d="M310 110 H390" class="flowl n"/><path d="M660 110 H740" class="flowl n"/><path d="M1010 110 H1090" class="flowl n"/>
+        <path d="M1225 160 V380 H1010" class="flowl"/>
+        <path d="M740 380 H660" class="flowl"/>
+        <path d="M525 330 V160" class="flowl"/>
+        <path d="M875 430 V480 H1225" class="flowl r"/>
+        <path d="M875 330 V230 H560 V160" class="flowl g" style="opacity:.6"/>
+        <g class="n d1"><rect x="40" y="60" width="270" height="100" rx="14" class="box lock"/><text x="175" y="100" text-anchor="middle" font-size="24" font-weight="700">site/v2.html</text><text x="175" y="135" text-anchor="middle" class="mono" font-size="17">the page · locked</text></g>
+        <g class="n d2"><rect x="390" y="60" width="270" height="100" rx="14" class="box"/><text x="525" y="100" text-anchor="middle" font-size="24" font-weight="700">books.py</text><text x="525" y="135" text-anchor="middle" class="mono" font-size="17">Scrapy spider</text></g>
+        <g class="n d3"><rect x="740" y="60" width="270" height="100" rx="14" class="box"/><text x="875" y="100" text-anchor="middle" font-size="24" font-weight="700">out.json</text><text x="875" y="135" text-anchor="middle" class="mono" font-size="17">10 books</text></g>
+        <g class="n d4"><rect x="1090" y="60" width="270" height="100" rx="14" class="box ok lock"/><text x="1225" y="100" text-anchor="middle" font-size="24" font-weight="700">check.py</text><text x="1225" y="135" text-anchor="middle" class="mono" font-size="17">4 checks · locked</text></g>
+        <g class="n d5"><rect x="740" y="330" width="270" height="100" rx="14" class="box ok"/><text x="875" y="370" text-anchor="middle" font-size="24" font-weight="700">heal.sh</text><text x="875" y="405" text-anchor="middle" class="mono" font-size="17">loop · guard · cap</text></g>
+        <g class="n d6"><rect x="390" y="330" width="270" height="100" rx="14" class="box agent"/><text x="525" y="370" text-anchor="middle" font-size="24" font-weight="700">claude -p</text><text x="525" y="405" text-anchor="middle" class="mono" font-size="17">Read Grep Glob Bash</text></g>
+        <g class="n d7"><rect x="1090" y="430" width="270" height="76" rx="12" class="box no"/><text x="1225" y="476" text-anchor="middle" class="mono" font-size="18" style="fill:#fca5a5">ESCALATION.md</text></g>
+        <g class="n d5"><text x="1240" y="270" class="lbl" font-size="16">check output</text><text x="700" y="365" class="lbl" font-size="16" text-anchor="middle">prompt</text><text x="440" y="250" class="lbl" font-size="16">edits</text><text x="700" y="222" class="lbl" font-size="16" style="fill:#86efac">re-run crawl + checks</text><text x="900" y="500" class="lbl" font-size="16" style="fill:#fca5a5">FAIL × 2</text></g>
+      </svg></div>
+    </div>
+    <div class="footer"><span>no server, no network, one shell script around one agent call</span><span>Loops</span></div>
+  </section>
+  <!-- 16 · SCALE -->
+  <section class="slide">
+    <div class="chrome-top"><span class="mark">zyte<span class="dot">.</span></span><span class="eyebrow">Demo 2 · fix it during the crawl</span></div>
+    <div class="body">
+      <div class="divider" style="flex:none">
+        <div class="kicker">Demo 2</div>
+        <h1>What about <span class="grad">scale?</span></h1>
+        <p class="sub">A million items a day, a crawl that runs for hours. Demo 1 waited for the crawl to finish. Here the end is too late.</p>
+      </div>
+    </div>
+    <div class="footer"><span>"a million a day" is the scenario, not a measurement</span><span>Demo 2</span></div>
+  </section>
+  <!-- 17 · CHALLENGES AT SCALE -->
+  <section class="slide">
+    <div class="chrome-top"><span class="mark">zyte<span class="dot">.</span></span><span class="eyebrow">Demo 2 · at scale</span></div>
+    <div class="body">
+      <div class="kicker">The selector breaks at hour 3. Now what?</div>
+      <h2>Every option <span class="grad">costs something</span></h2>
+      <div class="ch3">
+        <div class="chk"><span class="ix">01 · keep going</span><h3>Compute cost</h3><p>Every page after the break is downloaded, paid for in proxies and bandwidth, and stored broken.</p></div>
+        <div class="chk"><span class="ix">02 · stop it</span><h3>Stop cost</h3><p>The data arrives late or not at all. Someone has to notice, at 3am, and decide.</p></div>
+        <div class="chk gold"><span class="ix">03 · restart it</span><h3>Start cost</h3><p>A restart at hour 3 re-fetches 3 hours of pages, warms up again, and spends request budget the site may not give twice.</p></div>
+      </div>
+      <p class="lead" style="font-size:2.2cqh">Option 4: pause it, fix it, carry on.</p>
+    </div>
+    <div class="footer"><span>no measured numbers here on purpose: yours depend on your crawl</span><span>Demo 2</span></div>
+  </section>
+  <!-- 18 · ENTER SCRAPY MCP -->
+  <section class="slide">
+    <div class="chrome-top"><span class="mark">zyte<span class="dot">.</span></span><span class="eyebrow">Demo 2 · mid-crawl</span></div>
+    <div class="body">
+      <div class="divider" style="flex:none">
+        <div class="kicker">Can we fix a scraper mid-crawl?</div>
+        <h1>Enter the <span class="grad">Scrapy MCP</span></h1>
+        <p class="sub">Spidermon already checks a crawl while it runs. What was missing is a way for an agent to look inside it.</p>
+      </div>
+    </div>
+    <div class="footer"><span>scrapy-mcp-official 0.1.2 · needs Scrapy 2.19+</span><span>Demo 2</span></div>
+  </section>
+  <!-- 19 · MCP FEATURES -->
+  <section class="slide">
+    <div class="chrome-top"><span class="mark">zyte<span class="dot">.</span></span><span class="eyebrow">Demo 2 · the Scrapy MCP</span></div>
+    <div class="body">
+      <div class="kicker">A window into a running crawl</div>
+      <h2>Four tools. One of them <span class="grad">runs Python in the crawl.</span></h2>
+      <div class="cfg">
+        <div class="panel"><div class="hd"><b>mcp execute</b><span>code the agent sent, real run, 1 Oct</span></div><pre><span class="pre-c"># look at a page the crawl already downloaded</span>
+r = list(crawler.recent_responses)[-1]
+print(r.url)
+print(r.css(<span class="pre-v">"div.product_main p"</span>).getall())
+
+<span class="pre-c"># after its edit: try the fixed page object on all of them</span>
+m = load_page_objects()
+for r in list(crawler.recent_responses):
+    resp = HttpResponse(r.url, r.body, ...)
+    p = m.BooksToscrapeProductPage(response=resp)
+    print(p.name, p.price, p.currency, p.availability)</pre></div>
+        <div class="knobs">
+          <div class="knob"><div class="n">list_jobs, status</div><div class="d">find the running crawl, read its live stats.</div></div>
+          <div class="knob"><div class="n">execute</div><div class="d">Python inside the crawl process. Test a selector on pages already in memory: no new request, no restart.</div></div>
+          <div class="knob"><div class="n">inspection_reference</div><div class="d">the MCP's own guide to what is safe to poke at.</div></div>
+          <div class="knob"><div class="n">The mid-crawl window</div><div class="d">attaches through the remote-control extension Scrapy 2.19 turns on by default. <code>recent_responses</code> is ours, kept by base/quality.py.</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><span>from .heal/attempt-1.jsonl · imports and the headers argument trimmed (...)</span><span>Demo 2</span></div>
+  </section>
+  <!-- 20a · LIVE: PERFECT + BREAK -->
+  <section class="slide">
+    <div class="chrome-top"><span class="mark">zyte<span class="dot">.</span></span><span class="eyebrow">Demo 2 · live</span></div>
+    <div class="body">
+      <div class="kicker">Live, on books.toscrape.com</div>
+      <h2>A perfect run, then <span class="grad">we break it</span></h2>
+      <div class="term sm"><span class="p">$</span> make run
+<span class="ok">✓ perfect run: 200 books, all complete · 12s → books.jsonl</span>
+<span class="p">$</span> make break
+<span class="dim">37:</span>        raw = self.css("div.product_main <span class="no">p.price-now</span>::text").get()
+<span class="no">✗ broke the price selector: p.price_color → p.price-now</span>
+<span class="p">$</span> make run
+<span class="no">✗ the crawl did not finish cleanly: exit 0, 200 books, 200 missing fields</span></div>
+      <p class="lead" style="font-size:1.9cqh;margin-top:.8cqh">We can't redesign someone else's site, so we break our own selector. Staged, and we say so. Plain <code>make run</code> has no agent: it scrapes 200 books with no price, and the sad trombone plays.</p>
+    </div>
+    <div class="footer"><span>real output, trimmed · 10 pages, 8 parallel downloads</span><span>Demo 2</span></div>
+  </section>
+  <!-- 20b · LIVE HEAL -->
+  <section class="slide">
+    <div class="chrome-top"><span class="mark">zyte<span class="dot">.</span></span><span class="eyebrow">Demo 2 · the tripwire</span></div>
+    <div class="body">
+      <div class="kicker">Spidermon detects, heal.py decides</div>
+      <h2>Watch, pause, fix, <span class="grad">resume</span></h2>
+      <div class="diagram"><svg viewBox="0 0 1400 470" role="img" aria-label="Tripwire loop: crawl, check, pause, fix, resume">
+        <path d="M225 145 H295" class="flowl"/>
+        <path d="M515 145 H585" class="flowl r"/>
+        <path d="M805 145 H875" class="flowl"/>
+        <path d="M1095 145 H1165" class="flowl g"/>
+        <path d="M1280 90 V40 H410 V90" class="flowl g" style="opacity:.7"/>
+        <path d="M990 200 V330" class="flowl r"/>
+        <g class="n d1"><rect x="15" y="90" width="210" height="110" rx="14" class="box"/><text x="120" y="132" text-anchor="middle" font-size="22" font-weight="700">crawl runs</text><text x="120" y="164" text-anchor="middle" class="mono" font-size="16">items flowing</text></g>
+        <g class="n d2"><rect x="305" y="90" width="210" height="110" rx="14" class="box ok"/><text x="410" y="132" text-anchor="middle" font-size="22" font-weight="700">Tripwire</text><text x="410" y="164" text-anchor="middle" class="mono" font-size="16">every 0.5s</text></g>
+        <g class="n d3"><rect x="595" y="90" width="210" height="110" rx="14" class="box no"/><text x="700" y="132" text-anchor="middle" font-size="22" font-weight="700">engine pauses</text><text x="700" y="164" text-anchor="middle" class="mono" font-size="16">⏸ freeze, no kill</text></g>
+        <g class="n d4"><rect x="885" y="90" width="210" height="110" rx="14" class="box agent"/><text x="990" y="132" text-anchor="middle" font-size="22" font-weight="700">agent fixes</text><text x="990" y="164" text-anchor="middle" class="mono" font-size="16">claude -p + MCP</text></g>
+        <g class="n d5"><rect x="1175" y="90" width="210" height="110" rx="14" class="box ok"/><text x="1280" y="132" text-anchor="middle" font-size="22" font-weight="700">crawl resumes</text><text x="1280" y="164" text-anchor="middle" class="mono" font-size="16">▶ same process</text></g>
+        <g class="n d6">
+          <text x="120" y="240" text-anchor="middle" class="mono" font-size="16">books keep coming</text>
+          <text x="410" y="240" text-anchor="middle" class="mono" font-size="16">a new item missing</text>
+          <text x="410" y="264" text-anchor="middle" class="mono" font-size="16">a required field?</text>
+          <text x="700" y="240" text-anchor="middle" class="mono" font-size="16">queue + stats kept</text>
+          <text x="700" y="264" text-anchor="middle" class="mono" font-size="16">in-flight pages land</text>
+          <text x="1280" y="240" text-anchor="middle" class="mono" font-size="16">no restart, no re-crawl</text>
+          <text x="845" y="68" text-anchor="middle" class="lbl" font-size="16" style="fill:#6ee7b7">all new items complete: keep watching</text>
+          <text x="1010" y="280" class="lbl" font-size="16" style="fill:#fca5a5">2 failed attempts, or $5 spent</text>
+        </g>
+        <g class="n d7"><rect x="810" y="330" width="360" height="100" rx="14" class="box no lock"/><text x="990" y="372" text-anchor="middle" font-size="22" font-weight="700">stop the crawl</text><text x="990" y="404" text-anchor="middle" class="mono" font-size="16">SIGTERM · ESCALATION.md</text></g>
+      </svg></div>
+    </div>
+    <div class="footer"><span>one check, one action: the pause is what buys the agent time</span><span>Demo 2</span></div>
+  </section>
+
+  <section class="slide">
+    <div class="chrome-top"><span class="mark">zyte<span class="dot">.</span></span><span class="eyebrow">Demo 2 · the code behind it</span></div>
+    <div class="body">
+      <div class="kicker">When to stop it, what it can touch, what it is told</div>
+      <h2>Three pieces of code <span class="grad">run the loop</span></h2>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.8cqw;margin-top:2.6cqh">
+        <div class="panel"><div class="hd"><b>1 · the tripwire</b><span>settings.py, quality.py</span></div><pre style="font-size:1.4cqh;line-height:1.55">SPIDERMON_ENABLED = True
+SPIDERMON_PERIODIC_MONITORS = (
+    <span class="pre-v">{"base.quality.Tripwire": 0.5}</span>
+    if os.environ.get("HEAL_ENABLED", "1") == "1"
+    else {}
+)
+
+class Tripwire(MonitorSuite):
+    monitors = [LiveQuality]
+    monitors_failed_actions = [
+        <span class="pre-v">PauseForHealing</span>]
+
+<span class="pre-c"># 0.5 = seconds between checks</span></pre></div>
+        <div class="panel"><div class="hd"><b>2 · what the agent can touch</b><span>heal.py</span></div><pre style="font-size:1.4cqh;line-height:1.55">MCP_TOOLS = [
+    <span class="pre-v">"list_jobs", "status",
+    "execute", "inspection_reference"</span>]
+
+cmd = [CLAUDE, "-p", prompt, ...
+       <span class="pre-v">"--tools", "Read,Edit"</span>,
+       "--mcp-config", str(mcp_config),
+       <span class="pre-v">"--strict-mcp-config"</span>,
+       ...
+       "--allowedTools", " ".join(
+           f"mcp__scrapy__{t}" for t in MCP_TOOLS)]
+
+<span class="pre-c"># no Bash, no Write, no other MCP server</span></pre></div>
+        <div class="panel"><div class="hd"><b>3 · what it is told</b><span>heal.py, agent_prompt</span></div><pre style="white-space:pre-wrap;word-break:break-word;font-size:1.5cqh;line-height:1.55">The last 10 product pages are still in memory as `crawler.recent_responses`: test your fixed selectors against them. Then fix base/pages/books_toscrape_com.py. <span class="pre-v">Only edit that file.</span>
+
+...
+
+<span class="pre-v">Do not pause, unpause, stop or change the running crawl, and do not send new requests.</span> You cannot run shell commands. When you finish, the harness runs the fixture tests (uv run pytest tests -q) and, if they pass, loads your fixed page objects into the live crawl and resumes it.</pre></div>
+      </div>
+    </div>
+    <div class="footer"><span>same code as the files, line breaks reflowed to fit; ... marks trimmed lines</span><span>Demo 2</span></div>
+  </section>
+
+  <section class="slide">
+    <div class="chrome-top"><span class="mark">zyte<span class="dot">.</span></span><span class="eyebrow">Demo 2 · live heal</span></div>
+    <div class="body">
+      <div class="kicker">Same crawl, agent switched on. Watch it</div>
+      <h2>Pause, fix, <span class="grad">carry on</span></h2>
+      <div class="term sm"><span class="p">$</span> make run-with-heal
+<span class="no">✗ Spidermon: 8 of 8 new items missing fields</span>
+<span class="dim">⏸  crawl paused · 16 books so far</span>
+━━ attempt 1/2 ━━  agent attaching to the crawl through the Scrapy MCP…
+<span class="dim">   → mcp execute …   ← …/set-me-free_988/ None £17.46
+   → Edit base/pages/books_toscrape_com.py</span>
+<span class="ok">   attempt 1  PASS  ·  $0.06  ·  10s  ·  6 turns</span>
+<span class="ok">▶  crawl resumed with the fix, no restart</span></div>
+    </div>
+    <div class="footer"><span>recorded run, trimmed · 3 Oct 2026, Sonnet · r plays it at 2x</span><span>Demo 2</span></div>
+  </section>
+  <!-- 20c · RESULT -->
+  <section class="slide">
+    <div class="chrome-top"><span class="mark">zyte<span class="dot">.</span></span><span class="eyebrow">Demo 2 · result</span></div>
+    <div class="body">
+      <div class="kicker">HEAL_REPORT.md</div>
+      <h2>A few broken books, <span class="grad">then all correct</span></h2>
+      <div class="stats">
+        <div class="stat"><div class="v">8–16</div><div class="l">broken, of 200</div></div>
+        <div class="stat"><div class="v">0</div><div class="l">crawl restarts</div></div>
+        <div class="stat"><div class="v grad">$0.06–0.09</div><div class="l">cost per heal</div></div>
+        <div class="stat"><div class="v">1/2</div><div class="l">attempts, every run</div></div>
+      </div>
+      <div class="pair"><div class="panel"><div class="hd"><b>make diff</b><span>the agent's whole change</span></div><pre><span class="no">-    raw = self.css("div.product_main p.price-now::text").get()</span>
+<span class="ok">+    raw = self.css("div.product_main p.price_color::text").get()</span></pre></div></div>
+      <p class="note">Broken/restarts: 9 runs, 3 each on Haiku, Sonnet, Opus. Cost: 8 runs on Sonnet. 1 Oct 2026. The broken books were already downloading when Spidermon paused.</p>
+    </div>
+    <div class="footer"><span>printed by heal.py and saved to HEAL_REPORT.md</span><span>Demo 2</span></div>
+  </section>
+  <!-- 21 · DEMO 2 ARCHITECTURE -->
+  <section class="slide">
+    <div class="chrome-top"><span class="mark">zyte<span class="dot">.</span></span><span class="eyebrow">Demo 2 · architecture</span></div>
+    <div class="body">
+      <div class="kicker">scrapy-mcp-agent-mid-fix-crawl/, how the pieces talk</div>
+      <h2>The crawl never <span class="grad">stops</span></h2>
+      <div class="diagram"><svg viewBox="0 0 1400 540" role="img" aria-label="Demo 2 architecture">
+        <path d="M520 205 H580 V90 H920" class="flowl r"/>
+        <path d="M1140 140 V230" class="flowl"/>
+        <path d="M920 280 H840" class="flowl"/>
+        <path d="M600 280 H540" class="flowl"/>
+        <path d="M1140 330 V420" class="flowl"/>
+        <path d="M920 470 H720 V330" class="flowl g"/>
+        <g class="n d1"><rect x="40" y="40" width="500" height="480" rx="18" class="box"/><text x="290" y="85" text-anchor="middle" font-size="25" font-weight="700">Scrapy crawl · one process</text>
+          <rect x="70" y="110" width="440" height="60" rx="10" class="box"/><text x="290" y="148" text-anchor="middle" class="mono" font-size="18">engine · paused ⏸ / running ▶</text>
+          <rect x="70" y="180" width="440" height="60" rx="10" class="box ok"/><text x="290" y="218" text-anchor="middle" class="mono" font-size="18">Spidermon monitor · every 0.5s</text>
+          <rect x="70" y="250" width="440" height="60" rx="10" class="box"/><text x="290" y="288" text-anchor="middle" class="mono" font-size="18">recent_responses · last 10 pages</text>
+          <rect x="70" y="320" width="440" height="60" rx="10" class="box"/><text x="290" y="358" text-anchor="middle" class="mono" font-size="18">page_objects · scrapy-poet</text>
+          <rect x="70" y="390" width="440" height="60" rx="10" class="box"/><text x="290" y="428" text-anchor="middle" class="mono" font-size="18">remote control · Scrapy 2.19</text></g>
+        <g class="n d2"><rect x="920" y="40" width="440" height="100" rx="14" class="box ok"/><text x="1140" y="80" text-anchor="middle" font-size="24" font-weight="700">heal.py</text><text x="1140" y="115" text-anchor="middle" class="mono" font-size="17">loop · guard · 2 attempts</text></g>
+        <g class="n d3"><rect x="920" y="230" width="440" height="100" rx="14" class="box agent"/><text x="1140" y="270" text-anchor="middle" font-size="24" font-weight="700">claude -p</text><text x="1140" y="305" text-anchor="middle" class="mono" font-size="17">Read · Edit · 4 MCP tools</text></g>
+        <g class="n d4"><rect x="600" y="230" width="240" height="100" rx="14" class="box"/><text x="720" y="270" text-anchor="middle" font-size="22" font-weight="700">Scrapy MCP</text><text x="720" y="305" text-anchor="middle" class="mono" font-size="16">③ test live pages</text></g>
+        <g class="n d5"><rect x="920" y="420" width="440" height="100" rx="14" class="box ok"/><text x="1140" y="460" text-anchor="middle" font-size="24" font-weight="700">fixture tests</text><text x="1140" y="495" text-anchor="middle" class="mono" font-size="17">the gate · web-poet fixtures</text></g>
+        <g class="n d6"><text x="600" y="78" class="lbl" font-size="16" style="fill:#fca5a5">① fields missing → pause</text><text x="1155" y="192" class="lbl" font-size="16">② prompt</text><text x="1155" y="382" class="lbl" font-size="16">④ edit → ⑤ tests</text><text x="732" y="455" class="lbl" font-size="16" style="fill:#86efac">⑥ load, unpause</text></g>
+      </svg></div>
+    </div>
+    <div class="footer"><span>detection is Spidermon's, the MCP is the agent's window, the tests decide</span><span>Demo 2</span></div>
+  </section>
+  <!-- 22a · LEARNINGS DEMO 2 -->
+  <section class="slide">
+    <div class="chrome-top"><span class="mark">zyte<span class="dot">.</span></span><span class="eyebrow">Demo 2 · what we learned</span></div>
+    <div class="body">
+      <div class="kicker">What to take home</div>
+      <h2>Don't wait for <span class="grad">the crawl to finish</span></h2>
+      <div class="bp">
+        <div class="chk gold"><span class="tag yes">found while building</span><h3>Judge only new items</h3><p>A tripwire that counts every item so far re-paused the crawl right after a fix. The broken books were still in the total.</p></div>
+        <div class="chk"><span class="tag yes">found while building</span><h3>Code runs in the crawl</h3><p>Haiku re-imported the page-object module inside the crawl. Tests passed, the crawl stayed broken. Now the fix goes onto the classes the crawl really uses.</p></div>
+        <div class="chk"><span class="tag yes">in heal.py</span><h3>Pause, don't patch</h3><p>Swap one field on a page object, not the spider. The MCP's own docs call patching a running spider "a separate, riskier mode".</p></div>
+        <div class="chk"><span class="tag yes">in heal.py</span><h3>The tests decide</h3><p>Fixture tests saved with <code>scrapy savefixture</code> are the answer key. The agent can't run them, the script does.</p></div>
+        <div class="chk"><span class="tag yes">in heal.py</span><h3>Look, don't steer</h3><p>Pause, unpause and load belong to the script. The agent may read the crawl and edit one file.</p></div>
+        <div class="chk"><span class="tag yes">in heal.py</span><h3>Two tries, then a human</h3><p>If the gate still fails, the crawl stops and ESCALATION.md lists every attempt.</p></div>
+      </div>
+    </div>
+    <div class="footer"><span>the first two are bugs we hit in this build, not hypotheticals</span><span>Demo 2</span></div>
+  </section>
+  <!-- 22b · MODELS -->
+  <section class="slide">
+    <div class="chrome-top"><span class="mark">zyte<span class="dot">.</span></span><span class="eyebrow">Demo 2 · which model</span></div>
+    <div class="body">
+      <div class="kicker">Same loop, three models</div>
+      <h2>Haiku, Sonnet, <span class="grad">Opus</span></h2>
+      <table class="vtable">
+        <tr><th>Model</th><th>Healed on attempt 1</th><th>Cost per heal</th><th>Agent time</th></tr>
+        <tr><td>Haiku</td><td class="ok">3 of 3</td><td>$0.06–0.08</td><td>37–50s</td></tr>
+        <tr class="key"><td>Sonnet</td><td class="ok">3 of 3</td><td>$0.07–0.09</td><td>15–18s</td></tr>
+        <tr><td>Opus</td><td class="ok">3 of 3</td><td>$0.12–0.14</td><td>22–31s</td></tr>
+      </table>
+      <p class="note">3 runs each, 1 Oct 2026, same break, advisor off. All three fixed it. What differs is time and money. A different model is a different agent: re-measure before you switch.</p>
+    </div>
+    <div class="footer"><span>measured with heal.py, HEAL_MODEL=haiku|sonnet|opus</span><span>Demo 2</span></div>
+  </section>
+  <!-- 22c · CODE TO LOOP MAP -->
+  <section class="slide">
+    <div class="chrome-top"><span class="mark">zyte<span class="dot">.</span></span><span class="eyebrow">Demo 2 · the map</span></div>
+    <div class="body">
+      <div class="kicker">What we built, in loop terms</div>
+      <h2>Our code, <span class="grad">as a loop</span></h2>
+      <div class="diagram"><svg viewBox="0 0 1400 560" role="img" aria-label="Loop components mapped to our code: goal is filled JSON and clean logs, test is Spidermon, tool is Scrapy MCP, budget is 2 retries and a fixed dollar cap, then a human">
+        <text x="200" y="30" text-anchor="middle" class="lbl" font-size="17">LOOP COMPONENT</text><text x="1000" y="30" text-anchor="middle" class="lbl" font-size="17">OUR CODE</text>
+        <path d="M400 105 H600" class="flowl"/><path d="M400 240 H600" class="flowl"/><path d="M400 375 H600" class="flowl"/><path d="M400 510 H600" class="flowl"/>
+        <g class="n d1"><rect x="40" y="55" width="360" height="100" rx="14" class="box"/><text x="220" y="95" text-anchor="middle" font-size="27" font-weight="700">Goal</text><text x="220" y="130" text-anchor="middle" class="mono" font-size="17">definition of done</text></g>
+        <g class="n d1"><rect x="600" y="55" width="760" height="100" rx="14" class="box ok"/><text x="980" y="95" text-anchor="middle" font-size="25" font-weight="700">Filled JSON, correct logs</text><text x="980" y="130" text-anchor="middle" class="mono" font-size="17">every field filled · clean log · no errors</text></g>
+        <g class="n d2"><rect x="40" y="190" width="360" height="100" rx="14" class="box"/><text x="220" y="230" text-anchor="middle" font-size="27" font-weight="700">Test</text><text x="220" y="265" text-anchor="middle" class="mono" font-size="17">tests, evals</text></g>
+        <g class="n d2"><rect x="600" y="190" width="760" height="100" rx="14" class="box ok"/><text x="980" y="230" text-anchor="middle" font-size="25" font-weight="700">Spidermon</text><text x="980" y="265" text-anchor="middle" class="mono" font-size="17">watches the crawl, pauses it on bad data</text></g>
+        <g class="n d3"><rect x="40" y="325" width="360" height="100" rx="14" class="box"/><text x="220" y="365" text-anchor="middle" font-size="27" font-weight="700">Tool</text><text x="220" y="400" text-anchor="middle" class="mono" font-size="17">what the agent can touch</text></g>
+        <g class="n d3"><rect x="600" y="325" width="760" height="100" rx="14" class="box agent"/><text x="980" y="365" text-anchor="middle" font-size="25" font-weight="700">Scrapy MCP</text><text x="980" y="400" text-anchor="middle" class="mono" font-size="17">the agent's only window into the live crawl</text></g>
+        <g class="n d4"><rect x="40" y="460" width="360" height="100" rx="14" class="box"/><text x="220" y="500" text-anchor="middle" font-size="27" font-weight="700">Budget</text><text x="220" y="535" text-anchor="middle" class="mono" font-size="17">when to stop</text></g>
+        <g class="n d4"><rect x="600" y="460" width="470" height="100" rx="14" class="box gold"/><text x="835" y="500" text-anchor="middle" font-size="25" font-weight="700">2 retries · fixed $ cap</text><text x="835" y="535" text-anchor="middle" class="mono" font-size="17">$5 in heal.py</text></g>
+        <path d="M1070 510 H1130" class="flowl r"/>
+        <g class="n d5"><rect x="1130" y="460" width="230" height="100" rx="14" class="box no"/><text x="1245" y="500" text-anchor="middle" font-size="24" font-weight="700" style="fill:#fca5a5">Human</text><text x="1245" y="535" text-anchor="middle" class="mono" font-size="17" style="fill:#fca5a5">ESCALATION.md</text></g>
+      </svg></div>
+    </div>
+    <div class="footer"><span>same five loop pieces as Demo 1, now around a live crawl</span><span>Demo 2</span></div>
+  </section>
+  <!-- 23 · QUESTION -->
+  <section class="slide">
+    <div class="chrome-top"><span class="mark">zyte<span class="dot">.</span></span><span class="eyebrow">Your turn</span></div>
+    <div class="body">
+      <div class="kicker">Over to you</div>
+      <h1 class="qbig">How would you design <span class="grad">your</span> self-healing scraping workflow?</h1>
+      <div class="map"><div>what detects it?</div><div>what may the agent touch?</div><div>what decides?</div><div>who gets paged?</div><div>what's the budget?</div></div>
+    </div>
+    <div class="footer"><span>detect · context · act · verify · decide</span><span>Wrap-up</span></div>
+  </section>
+  <!-- 24 · THANK YOU -->
+  <section class="slide">
+    <div class="chrome-top"><span class="mark">zyte<span class="dot">.</span></span><span class="eyebrow">Thank you</span></div>
+    <div class="body title">
+      <div class="kicker">Self-healing spiders</div>
+      <h1>Thank you. <span class="grad">Questions?</span></h1>
+      <div class="byline"><b>Ayan Pahwa</b><span class="sep"></span><span>github.com/zytelabs/self-healing-spiders</span></div>
+    </div>
+    <div class="footer"><span>Extract Summit · Austin 2026</span><span>Wrap-up</span></div>
+  </section>
+</div>
+
+<div class="dots" id="dots"></div>
+<div class="navzone l" id="navL"></div>
+<div class="navzone r" id="navR"></div>
+
+<script>
+(function(){
+  const snippets=['response.css("h3.title")','<span class="k">200</span> OK · 0 items','yield item','price: None',
+    '.price--now::text','attempt 1/2','check.py ✓','data-stock="in"','scrapy runspider','golden sample'];
+  const stream=document.getElementById('stream');
+  for(let i=0;i<14;i++){
+    const t=document.createElement('div');t.className='tok';t.innerHTML=snippets[i%snippets.length];
+    t.style.left=(Math.random()*92)+'%';const dur=14+Math.random()*16;
+    t.style.animationDuration=dur+'s';t.style.animationDelay=(-Math.random()*dur)+'s';
+    t.style.fontSize=(1.1+Math.random()*0.8).toFixed(2)+'cqw';stream.appendChild(t);
+  }
+})();
+const slides=[...document.querySelectorAll('.slide')];
+const slidenum=document.getElementById('slidenum');const dotsWrap=document.getElementById('dots');const progress=document.getElementById('progress');
+let idx=0;
+slides.forEach((s,i)=>{const b=document.createElement('button');b.onclick=()=>go(i);dotsWrap.appendChild(b);});
+const dots=[...dotsWrap.children];
+function go(n){idx=Math.max(0,Math.min(slides.length-1,n));
+  slides.forEach((s,i)=>s.classList.toggle('active',i===idx));dots.forEach((d,i)=>d.classList.toggle('on',i===idx));
+  progress.style.width=(idx/(slides.length-1)*100)+'%';slidenum.textContent=(idx+1)+' / '+slides.length;history.replaceState(null,'','#'+(idx+1));}
+document.addEventListener('keydown',e=>{
+  if(['ArrowRight','ArrowDown','PageDown',' '].includes(e.key)){e.preventDefault();go(idx+1);}
+  else if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();go(idx-1);}
+  else if(e.key==='Home')go(0);else if(e.key==='End')go(slides.length-1);
+  else if(e.key==='f'){if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen();}
+});
+document.getElementById('navR').onclick=()=>go(idx+1);document.getElementById('navL').onclick=()=>go(idx-1);
+
+const hn=parseInt((location.hash||'').replace(/\D/g,''));go(hn?hn-1:0);
+
+// ---------- light mode toggle (key l) ----------
+(function(){
+  try{if(localStorage.getItem('light')==='1')document.documentElement.classList.add('light');}catch(e){}
+  document.addEventListener('keydown',e=>{
+    if(e.key==='l'&&!e.metaKey&&!e.ctrlKey){
+      const on=document.documentElement.classList.toggle('light');
+      try{localStorage.setItem('light',on?'1':'0');}catch(e){}
+    }
+  });
+})();
+</script>
+</body>
+</html>
